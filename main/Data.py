@@ -21,7 +21,6 @@ from cryptography.fernet import Fernet
 
 
 FILES = [
-    "data/models_database/la_centrale_df.csv",
     "data/models_database/Audi.csv",
     "data/models_database/Peugeot.csv",
     "data/models_database/Ferrari.csv",

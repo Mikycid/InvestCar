@@ -22,7 +22,7 @@ export class ImageLayout extends Component {
                     <li>Top records &nbsp;&nbsp;</li>
                     {this.props.best_models.map((item, step)=>(
                         <li key={step} onClick={()=>this.props.switchTab("modelview", {item})}>
-                            {item} : {(this.props.best_percentages[step] * 100 - 100).toFixed(2)} %
+                            {item.replace('slashcharacter001', '/')} : {(this.props.best_percentages[step] * 100 - 100).toFixed(2)} %
                         </li>
                     ))}
                 </ul>

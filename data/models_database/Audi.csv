@@ -1,4 +1,4 @@
-AUDI,A4,21280,B9,Break,2017,24/03/2020,DIESEL,100406,MANUEL,57000,7,150,<150000km
+marque,modele,prix,generation,carrosserie,annee,date,energie,kilometrage,transmition,code postal,chevaux_fiscaux,chevaux_din,etat
 AUDI,Q2,34070,1 génération,4x4_SUV,2017,24/03/2020,ESSENCE,51038,AUTOMATIQUE,28000,8,150,<150000km
 AUDI,A4,24470,B8slashcharacter0018K [restyling],Break,2015,24/03/2020,DIESEL,115625,AUTOMATIQUE,57000,10,177,<150000km
 AUDI,A3,15330,8V,Hatchback,2014,24/03/2020,DIESEL,166588,MANUEL,57000,8,150,<250000km

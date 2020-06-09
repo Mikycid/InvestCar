@@ -1,4 +1,4 @@
-FERRARI,458,191390,1 génération,Coupé,2013,30/03/2020,ESSENCE,49020,AUTOMATIQUE,66000,49,570,<50000km
+marque,modele,prix,generation,carrosserie,annee,date,energie,kilometrage,transmition,code postal,chevaux_fiscaux,chevaux_din,etat
 FERRARI,488,196760,1 génération,spider roadster,2017,13/05/2020,ESSENCE,12500,AUTOMATIQUE,66000,62,670,<50000km
 FERRARI,488,212680,1 génération,spider roadster,2018,30/03/2020,ESSENCE,78288,AUTOMATIQUE,66000,61,670,<150000km
 FERRARI,348,81780,1 génération,Coupé,1993,30/03/2020,ESSENCE,29250,MANUEL,24000,21,300,<50000km
