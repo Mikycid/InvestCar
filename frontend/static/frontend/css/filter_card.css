@@ -1,0 +1,4 @@
+#filter-card{
+    display: flex;
+    flex-direction: column;
+}

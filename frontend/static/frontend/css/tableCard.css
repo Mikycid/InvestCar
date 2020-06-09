@@ -1,0 +1,85 @@
+@keyframes alignTop{
+    from {
+        top:0%;
+    }
+    to{
+        top: -1%;
+    }
+}
+@keyframes alignDown{
+    from {
+        top:-1%;
+    }
+    to{
+        top: 0%;
+    }
+}
+.card-container{
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    box-shadow: 0 0 3px;
+    border-radius : 0.2em;
+    box-sizing: border-box;
+    cursor: pointer;
+    list-style: none;
+    animation: 0.3s alignDown ease-in forwards;
+    transition: width 0.3s ease-in, height 0.3s ease-in;
+    width: 95%;
+    height: 95%;
+    background-color:rgb(248, 248, 248);
+    
+    
+}
+
+.card-container:hover{
+    transition: width 0.3s ease-in, height 0.3s ease-in;
+    border: 1px rgb(163, 34, 2) solid;
+    width: 96%;
+    height: 96%;
+    animation: 0.3s alignTop ease-in forwards;
+    
+}
+
+
+
+.card-container > li:nth-of-type(2){
+    padding: 15px;
+    margin-top: 15px;
+
+}
+.card-container > li:nth-of-type(3){
+    margin-top: 15px;
+
+}
+.card-container > li:last-of-type{
+    height: 90px;
+
+}
+
+.card-container > li:first-of-type {
+    width: 60%;
+    border-bottom: 1px lightgray solid;
+    padding-bottom: 12px;
+    font-weight: bold;
+    text-shadow: 0 1px 1px black;
+    
+}
+.card-container li{
+    width: 80%;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    
+}
+
+.card-container li p{
+    text-align: center;
+    line-height: 32px;
+    font-size: 15px;
+    font-family:calibri, sans-serif;
+
+}
+

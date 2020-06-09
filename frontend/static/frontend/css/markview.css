@@ -1,0 +1,90 @@
+@media screen and (max-width: 1100px){
+    #mark-view{
+        height: 100vh;
+        position: relative;
+        top: 0;
+    }
+    #mark-view > *:not(:first-child){
+        padding-top: 3vh;
+    }
+    #mark-title img{
+        margin: 0;
+        padding: 0;
+        position: relative;
+        width: 100vw;
+    }
+    #mark-title{
+        color: #750303;
+        text-align: center;
+        font-weight: bold;
+        font-size: 22px;
+    }
+    #mark-view-list-models{
+        text-align: center;
+    }
+    #mark-view-list-models h3 {
+        padding-bottom: 20px;
+    }
+    #mark-view-list-models ul{
+        margin: auto;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-evenly;
+    }
+    #mark-view-list-models ul li{
+        width: 50%;
+    }
+}
+@media screen and (min-width: 600px){
+    #mark-title img{
+        width: 60vw;
+    }
+}
+@media screen and (min-width: 1100px){
+    #mark-view{
+        position: relative;
+        top: 80px;
+        display: grid;
+        grid-template-rows: calc(100vh - 60px);
+        grid-template-columns: 50% 50%;
+        grid-template-areas: "image liste";
+    }
+    #mark-title img{
+        max-width: 80%;
+        max-height: 70vh;
+    }
+    #mark-title{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color:#750303;
+        grid-area: image;
+    }
+    #mark-view-model-list{
+        grid-area: liste;
+    }
+    #mark-view ul {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+}
+
+#mark-view ul {
+    list-style: none;
+}
+
+#mark-view li {
+    cursor: pointer;
+    line-height: 30px;
+}
+#mark-view li:hover {
+    color: #333;
+}
+
+

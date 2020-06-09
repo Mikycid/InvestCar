@@ -1,0 +1,18 @@
+#compare-frame{
+    width: 100vw;
+    height: calc(100vh - 60px);
+    position: absolute;
+    top: 60px;
+}
+#trash-compare-icon{
+    position: absolute;
+    bottom: 10px;
+    right:10px;
+    width: 60px;
+}
+.image-comparator{
+    position: absolute;
+}
+#compare-manage-pannel{
+    float: left;
+}

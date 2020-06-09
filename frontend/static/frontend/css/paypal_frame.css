@@ -1,0 +1,36 @@
+#paypal-container{
+    position: relative;
+    top: 60px;
+    width: 100%;
+    display: grid;
+    grid-template-areas: "payment desc"
+                         "payment result";
+    grid-template-rows: 75% 25%;
+    grid-template-columns: 50% 50%;
+    height: auto;
+}
+#paypal-button-container{
+    grid-area: payment;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    height: 100%;
+}
+#product-desc{
+    grid-area: desc;
+}
+#result-products{
+    grid-area: result;
+}
+#download-text{
+    display: none;
+}
+#download-pdf-link{
+    display: none;
+}
+#waiting-payment{
+    display: none;
+}
+

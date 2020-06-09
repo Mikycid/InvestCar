@@ -1,0 +1,55 @@
+@keyframes leftin{
+    0%{
+        left: -100vw;
+    } 75% {
+        left: -10vw;
+    }
+    
+    100% {
+        left: 0;
+    }
+}
+@keyframes fadein {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+@keyframes fadeout {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+@keyframes switchtab {
+    from {
+        left:100vw;
+    } to {
+        left:0;
+    }
+}
+@keyframes outtab {
+    from {
+        left:0;
+    } to {
+        left: -100vw;
+    }
+}
+@keyframes outploy-records {
+    from{
+        height: 100%;
+    } to {
+        height: 18px;
+    }
+}
+@keyframes deploy-records {
+    from{
+        height: 18px;
+    } to {
+        height: 250px;
+    }
+}
