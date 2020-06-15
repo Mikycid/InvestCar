@@ -30,6 +30,7 @@ urlpatterns = [
     path('getCompareView', views.getCompareView),
     path('addItemIntoView', views.addItemIntoView),
     path('addToFavorites', views.addToFavorites),
+    path('removeFromFavorites', views.removeFromFavorites),
     path('renameView', views.renameView),
     path('deleteView', views.deleteView),
     path('getModelDatasComparator', views.getModelDatasComparator),
@@ -37,4 +38,5 @@ urlpatterns = [
     path('modifyItemPos', views.modifyItemPos),
     path('getMapDatas', views.getMapDatas),
     path('deleteItem', views.deleteItem),
+    path('isFav', views.isFav),
     ]

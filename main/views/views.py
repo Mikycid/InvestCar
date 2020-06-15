@@ -1,21 +1,17 @@
 from django.http import JsonResponse
 from .. import Data
-from .. import modelFormatter
 from django.core import serializers
 from math import ceil
 import os
 import json
 from json.decoder import JSONDecodeError
 from django.contrib.auth.models import User, Group
-from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.mail import send_mail, EmailMessage
 import pandas as pd
-import requests
 import re
 from django.views.decorators.cache import cache_page
-import wikipedia
 from cryptography.fernet import Fernet
 from main.models import Buyings
 
@@ -156,16 +152,7 @@ def genView(request):
     mean_price_by_zipcodes = data.meanPriceByZipcodes(modele.modele.iloc[0], modele.marque.iloc[0], gen=modele.generation.iloc[0])
     
     this_volume = len(modele.generation)
-    
-    user = User.objects.get(pk=request.user.id)
-    try:
-        favs = json.loads(user.profile.favorites)
-    except JSONDecodeError:
-        favs = []
-    if modele.marque.iloc[0] + " " + modele.modele.iloc[0] +  " " + modele.generation.iloc[0] not in favs:
-        is_fav = False
-    else:
-        is_fav = True
+
     return JsonResponse({'graphs':graphs,
                          'zipcodes':zipcodes,
                          'meanprice':mean_price_by_zipcodes,
@@ -175,22 +162,9 @@ def genView(request):
                          'marque':modele.marque.iloc[0],
                          'generation':modele.generation.iloc[0],
                          'crypted': crypted,
-                         'is_fav': is_fav,
                          })
 
-@cache_page(60*60*48)
-def getImage(request):
-    modele = request.GET["modele"]
-    marque = request.GET["marque"]
-    if marque == "true":
-        image = get_wiki_image(modele)
-        return JsonResponse({'image':image})
-    else:
-        modele = data.query(" ".join(modele.split("_")), "generation")
-        query = modele.marque.iloc[0] + " " + modele.modele.iloc[0] + " " + int_to_roman(re.search(r"\d+",modele.generation.iloc[0]).group(0))
-        
-        image = get_wiki_image(query)
-        return JsonResponse({'image':image})
+
 
 
 @cache_page(60*120)
@@ -202,15 +176,7 @@ def bestPercentages(request):
     }
     return JsonResponse(results)
 
-@cache_page(60*120)
-def getMainPageImages(request):
-    images = data.markmodeles[0:5]
-    images_url = []
-    for image in images:
-        modele = data.query(image, "generation")
-        query = modele.marque.iloc[0] + " " + modele.modele.iloc[0] + " " + int_to_roman(re.search(r"\d+",modele.generation.iloc[0]).group(0))
-        images_url.append(get_wiki_image(query))
-    return JsonResponse({'images': images_url})
+
 
 @cache_page(60*120)
 def filterZipCodes(request):
@@ -278,44 +244,6 @@ def getModelInfos(request):
                          'extra_urban_conso': extra_urban_conso,
                          })
 
-def connexion(request):
-    error = False
-    username = request.GET["username"]
-    password = request.GET["password"]
-    user = authenticate(username=username,
-         password=Fernet(b"GkHf0-y9IMYoiGsTbUfVj1wtBtolEMLuK2awH9WEu5Y=").decrypt(password.encode()))
-    if user is not None:
-        email = user.email
-        if user.is_superuser:
-            group = ["admin"]
-        else: 
-            group = serializers.serialize('json',user.groups.all())
-        if user:
-            login(request, user)
-        else: 
-            error = True
-        if error:
-            return JsonResponse({'error': error})
-    else:
-        return JsonResponse({'error': error, 'username': username, 'email': email, 'group': group})
-
-def inscription(request):
-    error = False
-    try:
-        username = request.GET["username"]
-        password = request.GET["password"]
-        email = request.GET["email"]
-        user = User.objects.create_user(username, email, password)
-        user.groups.set(["Basic user"])
-        user.save()
-    except:
-        error = True
-    
-    return JsonResponse({'error': error})
-    
-def deconnexion(request):
-    logout(request)
-    return JsonResponse({'error': False})
         
 
 @user_passes_test(lambda x: x.is_superuser)
@@ -339,69 +267,9 @@ def sendFileDatas(request):
     data.addNewCsv(datas)
     return JsonResponse({})
 
-def get_wiki_image(query):
-    WIKI_REQUEST = 'http://fr.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=original&titles='
-    query = modelFormatter.wikiModelFormatter(query)
-    
-    search_term = query.split(" ")
-    for i in range(len(search_term) - 1):
-        search_term[i] = search_term[i].lower().capitalize()
-    print(" ".join(search_term))
-    try:
-        search_term = " ".join(search_term)
-        wikipedia.set_lang('fr')
-        wkpage = wikipedia.WikipediaPage(title = search_term)
-        title = wkpage.title
-        response  = requests.get(WIKI_REQUEST+title)
-        json_data = response.json()
-        img_link = list(json_data['query']['pages'].values())[0]['original']['source']
-        return img_link        
-    except:
-        search_term = query.split(" ")
-        for i in range(len(search_term) - 1):
-            search_term[i] = search_term[i].lower().capitalize()
-        search_term.pop()
-        search_term = " ".join(search_term)
-        try:
-            
-            wikipedia.set_lang('fr')
-            wkpage = wikipedia.WikipediaPage(title = search_term)
-            title = wkpage.title
-            response  = requests.get(WIKI_REQUEST+title)
-            json_data = response.json()
-            img_link = list(json_data['query']['pages'].values())[0]['original']['source']
-            return img_link      
-        except:  
-            return 0
 
 
 
-def int_to_roman(nb):
-    res = ''
-    nb = int(nb)
-    if nb >= 50:
-        res += 'L'
-        nb -= 50
-     
-    while nb >= 10:
-        res += 'X'
-        nb -= 10
-     
-    if nb == 9:
-        res += 'IX'
-        nb -= 9
- 
-    if nb >= 5:
-        res += 'V'
-        nb -= 5
- 
-    if nb == 4:
-        res += 'IV'
-        nb -= 4
- 
-    while nb > 0:
-        res += 'I'
-        nb -= 1
- 
-    return res
+
+
     

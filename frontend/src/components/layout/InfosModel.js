@@ -22,7 +22,6 @@ export class InfosModel extends Component {
         }
     }
     componentDidMount(){
-        console.log(window.innerHeight);
         this._isMounted = true;
         fetch('/getModelInfos?modele='+this.props.item.split(" ").join('_'))
         .then(res=>res.json())
@@ -51,7 +50,6 @@ export class InfosModel extends Component {
     }
     selectMotor(n, e){
         let new_select = this.state.selected_motors;
-        console.log(new_select);
         new_select[n] = e.target.value;
         
         this.setState({

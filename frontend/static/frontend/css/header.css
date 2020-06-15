@@ -53,6 +53,19 @@
     .phone-height {
         display:none;
     }
+    #compare-button-hd{
+        position: absolute;
+        right: 0;
+        height: 60px;
+        cursor: pointer;
+        z-index: 1000;
+        display: inline-block !important;
+    }
+    #header-container{
+        height: 60px;
+        width: 100vw;
+        position: absolute;
+    }
 }
 @media screen and (max-width: 1100px){
     .header {
@@ -112,11 +125,10 @@
         left: -32px;
     }
 }
-#header-container{
-    height: 60px;
-    width: 100vw;
-    position: absolute;
+#compare-button-hd{
+    display: none;
 }
+
 #search {
     display: flex;
     justify-content: center;
@@ -135,10 +147,4 @@
 #back-button:hover {
     background-color: rgba(220,220,220,0.4);
 }
-#compare-button-hd{
-    position: absolute;
-    right: 0;
-    height: 60px;
-    cursor: pointer;
-    z-index: 1000;
-}
+

@@ -97,7 +97,6 @@ export class GenView extends Component {
                     marque: results.marque,
                     generation: results.generation,
                     crypted: results.crypted,
-                    is_fav: results.is_fav,
                 });
                 this.colorMapWithMeanPriceVolume();
                 document.getElementsByClassName("loading")[0].style.animation = "0.8s fadeout ease-out forwards";
@@ -107,6 +106,14 @@ export class GenView extends Component {
                 }, 1000);
             }
         });
+        fetch('/isFav?model='+this.props.item)
+        .then(res=>res.json())
+        .then((results)=>{
+            if(this._isMounted){
+                this.setState({
+                    is_fav: results.is_fav,
+                });
+        }});
         fetch('/getMainPercentages?modele='+this.props.item.split(" ").join('_'))
         .then(res=>res.json())
         .then((results)=>{
@@ -469,8 +476,10 @@ export class GenView extends Component {
     addToFav(){
         if (!this.state.is_fav){
             fetch('addToFavorites?item='+this.props.item);
+            this.setState({is_fav: true});
         } else {
             fetch('removeFromFavorites?item='+this.props.item);
+            this.setState({is_fav: false});
         }
     }
     render() {
@@ -523,8 +532,8 @@ export class GenView extends Component {
                                 <img
                                     src={!this.state.is_fav ? static_img+"/tofav.png" : static_img+"/faved.png"}
                                     id="fav-btn" alt="Ajouter aux favoris"
-                                    onMouseOver={()=>this.addToFavHover()} 
-                                    onMouseOut={()=>this.addToFavOut()}
+                                    onMouseOver={!this.state.is_fav ? ()=>this.addToFavHover() : ()=>{}} 
+                                    onMouseOut={!this.state.is_fav ? ()=>this.addToFavOut() : ()=>{}}
                                     onClick={()=>this.addToFav()}
                                     />
                             </div>
