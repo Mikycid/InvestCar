@@ -416,3 +416,14 @@
     width: 100%;
     background-color: rgba(255,255,255,0);
 }
+.etoile{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 50px;
+}
+.etoile img{
+    width: 40px;
+    height: 40px;
+}

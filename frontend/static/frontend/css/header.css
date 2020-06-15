@@ -112,7 +112,11 @@
         left: -32px;
     }
 }
-
+#header-container{
+    height: 60px;
+    width: 100vw;
+    position: absolute;
+}
 #search {
     display: flex;
     justify-content: center;
@@ -133,7 +137,7 @@
 }
 #compare-button-hd{
     position: absolute;
-    right: 5px;
+    right: 0;
     height: 60px;
     cursor: pointer;
     z-index: 1000;

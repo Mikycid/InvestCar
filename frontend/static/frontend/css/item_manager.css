@@ -1,0 +1,22 @@
+#item-manager-child{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    height: 100%;
+    width: 100%;
+}
+#modify-item-pos{
+    border: 2px double lightgray;
+    display: grid;
+    grid-template-rows: 50% 50%;
+    grid-template-columns: 50% 50%;
+    width: 50px;
+    height: 50px;
+}
+#modify-item-pos span{
+    border: 1px solid lightgray;
+}
+.current_item_pos{
+    background-color: green;
+}

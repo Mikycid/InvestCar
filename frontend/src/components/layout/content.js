@@ -13,7 +13,7 @@ import GenView from '../GenView.js';
 import About from '../About.js';
 import PaypalFrame from './PaypalFrame.js';
 import Thanks from '../thanks.js';
-import Comparator from './Comparator.js';
+import Comparator from '../comparator/Comparator.js';
 const cookies = new Cookies();
 
 export class Content extends Component {
@@ -191,7 +191,7 @@ export class Content extends Component {
                 }
                 {this.props.onglet === "comparator" ?
                     <div className="page-content">
-                        <Comparator items={this.props.compared_items}/>
+                        <Comparator items={this.props.compared_items} goBack={()=>this.props.goBack()}/>
                     </div>
                     : ""
                 }

@@ -1,10 +1,11 @@
 from django.http import JsonResponse
-from . import Data
-from . import modelFormatter
+from .. import Data
+from .. import modelFormatter
 from django.core import serializers
 from math import ceil
 import os
 import json
+from json.decoder import JSONDecodeError
 from django.contrib.auth.models import User, Group
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import user_passes_test
@@ -20,6 +21,9 @@ from main.models import Buyings
 
 data = Data.DataMachine()
 data.start()
+
+def getData():
+    return data
 
 def is_premium(user):
     return user.groups.filter(name='Premium').exists() or user.is_superuser
@@ -50,9 +54,12 @@ def isUserLoggedIn(request):
         return JsonResponse({'isLoggedIn': True})
     else:
         return JsonResponse({'isLoggedIn': False})
-        
+ 
 def getEncryptedPdf(request):
     return JsonResponse({'crypted': data.encrypted_pdf})
+
+def getEncryptedProtected(request):
+    return JsonResponse({'crypted': data.protected_encrypted})
 
 def registerCommand(request):
     body_unicode = request.body.decode('utf-8')
@@ -144,12 +151,21 @@ def genView(request):
         zipcodes = data.zipCodes(modele.modele.iloc[0], modele.marque.iloc[0], gen=modele.generation.iloc[0])
     else:
         zipcodes = []
+        crypted = 0
 
     mean_price_by_zipcodes = data.meanPriceByZipcodes(modele.modele.iloc[0], modele.marque.iloc[0], gen=modele.generation.iloc[0])
     
     this_volume = len(modele.generation)
     
-    
+    user = User.objects.get(pk=request.user.id)
+    try:
+        favs = json.loads(user.profile.favorites)
+    except JSONDecodeError:
+        favs = []
+    if modele.marque.iloc[0] + " " + modele.modele.iloc[0] +  " " + modele.generation.iloc[0] not in favs:
+        is_fav = False
+    else:
+        is_fav = True
     return JsonResponse({'graphs':graphs,
                          'zipcodes':zipcodes,
                          'meanprice':mean_price_by_zipcodes,
@@ -159,6 +175,7 @@ def genView(request):
                          'marque':modele.marque.iloc[0],
                          'generation':modele.generation.iloc[0],
                          'crypted': crypted,
+                         'is_fav': is_fav,
                          })
 
 @cache_page(60*60*48)

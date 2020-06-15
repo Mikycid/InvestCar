@@ -53,3 +53,22 @@
         height: 250px;
     }
 }
+@keyframes header-hide{
+    from{
+        height:60px;
+    }
+    to{
+        height: 0px;
+        opacity: 0;
+    }
+}
+@keyframes header-deploy{
+    from{
+        height:0px;
+        opacity:1;
+    }
+    to{
+        height:60px;
+    }
+}
+

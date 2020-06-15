@@ -24,7 +24,7 @@ export class ModelPercentage extends Component {
     }
     render() {
         return (
-            <div id="percentage-premium">
+            <div id={this.props.from_comp ? "percentage-comp" : "percentage-premium"}>
                 <p>Vous pouvez consulter le pourcentage en tapant ici le nombre de jours pour calculer la variation : </p>
                 <form onSubmit={(e)=>this.getPercentage(e)}>
                     <input type="text"/><br/><br/>

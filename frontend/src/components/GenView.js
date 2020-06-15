@@ -65,6 +65,7 @@ export class GenView extends Component {
             last_index: 0,
             previous_scroll_pos : 0,
             crypted: 0,
+            is_fav: false,
         };
         this.slider = 0;
     }
@@ -96,6 +97,7 @@ export class GenView extends Component {
                     marque: results.marque,
                     generation: results.generation,
                     crypted: results.crypted,
+                    is_fav: results.is_fav,
                 });
                 this.colorMapWithMeanPriceVolume();
                 document.getElementsByClassName("loading")[0].style.animation = "0.8s fadeout ease-out forwards";
@@ -207,7 +209,7 @@ export class GenView extends Component {
         let counter_overseas = [];
         overseas.forEach(()=>counter_overseas.push(0));
         let max_value = 0;
-        this.state.zipcodes.map((item, step)=>{
+        this.state.zipcodes.map((item)=>{
             if (this.state.zipcodes.count(item) > max_value){
                 max_value = this.state.zipcodes.count(item);
             }
@@ -282,14 +284,18 @@ export class GenView extends Component {
         let counter_overseas = [];
         overseas.forEach(()=>counter_overseas.push(0));
         let max_value = 0;
+        let min_value = 0;
         this.state.meanprices.map((item, step)=>{
             if (item[1] > max_value){
                 max_value = item[1];
             }
+            if (item[1] < min_value || min_value == 0){
+                min_value = item[1];
+            }
         });
         this.state.meanprices.map((item)=>{
             if (item[0].length < 3){
-                let color = item[1] / max_value * 255;
+                let color = (item[1] - min_value) / (max_value - min_value) * 255;
                 document.getElementById(String(item[0])).style.fill = "rgb(0,"+color+",0)";
                 document.getElementById(String(item[0])).onmouseover = () => {
                     let last_color = document.getElementById(String(item[0])).style.fill;
@@ -341,7 +347,7 @@ export class GenView extends Component {
                 }}
                 const container = document.getElementById("overseas-list");
                 container.innerHTML = "";
-                let color = i / max_value * 255;
+                let color = (i - min_value) / (max_value - min_value) * 255;
                 node.innerHTML = overseas[step].split(":")[0];
                 node.style.backgroundColor = "rgb(0,"+color+",0)";
                 container.appendChild(node);
@@ -450,6 +456,23 @@ export class GenView extends Component {
             this.goTo(this.state.last_index - 1);
         }
     }
+    addToFavHover(){
+        if (!this.state.is_fav){
+            document.getElementById("fav-btn").src = static_img+"/faved.png";
+        }
+    }
+    addToFavOut(){
+        if (!this.state.is_fav){
+            document.getElementById("fav-btn").src = static_img+"/tofav.png";
+        }
+    }
+    addToFav(){
+        if (!this.state.is_fav){
+            fetch('addToFavorites?item='+this.props.item);
+        } else {
+            fetch('removeFromFavorites?item='+this.props.item);
+        }
+    }
     render() {
         var slider_settings = {
             ref: slider => this.slider = slider,
@@ -496,6 +519,15 @@ export class GenView extends Component {
                                                                                 item:this.props.item,
                                                                                 crypted: this.state.crypted }})}>
                                                                                         Acheter le pdf </p>
+                            <div className="etoile">
+                                <img
+                                    src={!this.state.is_fav ? static_img+"/tofav.png" : static_img+"/faved.png"}
+                                    id="fav-btn" alt="Ajouter aux favoris"
+                                    onMouseOver={()=>this.addToFavHover()} 
+                                    onMouseOut={()=>this.addToFavOut()}
+                                    onClick={()=>this.addToFav()}
+                                    />
+                            </div>
                         </div>
                     </div>
                     
@@ -533,7 +565,7 @@ export class GenView extends Component {
                                 <div>
                                     <p><a href={this.state.url.join("/")+"/meanPriceCsv.csv"} download={"prix_moyen_"+this.props.item.split(" ").join("_")+".csv"}>Téléchargez</a> ces données au format CSV.</p>
                                     <button onClick={(e)=>this.resetMeanPriceFilter(e)}>Séléctionner un autre graphique</button>
-                                    <button onClick={()=>this.props.addComparison({type:'graph', url:this.state.url.join("/")+"/meanPriceByMonth.svg"})}>Ajouter au comparateur</button>
+                                    <button onClick={()=>this.props.addComparison({type:'graph', url:this.state.url.join("/")+"/meanPriceByMonth.svg", name:"Graphique de prix moyen pour " + this.props.item})}>Ajouter au comparateur</button>
                                 </div>
                                 :
                                 <p className="fill-form">Remplissez le formulaire ci-dessus pour afficher le graphique du prix moyen.</p>

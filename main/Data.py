@@ -22,11 +22,11 @@ from cryptography.fernet import Fernet
 
 FILES = [
     "data/models_database/Audi.csv",
-    "data/models_database/Peugeot.csv",
-    "data/models_database/Ferrari.csv",
+    "data/models_database/Peugeot.csv",]
+"""    "data/models_database/Ferrari.csv",
     "data/models_database/Renault.csv",
     "data/models_database/BMW.csv",
-    "data/models_database/Alpine.csv"]
+    "data/models_database/Alpine.csv"]"""
 STATES = [
     "<5000km",
     "<50000km",
@@ -50,8 +50,9 @@ class DataMachine(Thread):
         self.key = Fernet.generate_key()
         self.protected_encrypted = "protected-"+Fernet(self.key).encrypt(b"protected").decode("utf-8")
         self.encrypted_pdf = "pdf-"+Fernet(self.key).encrypt(b"pdfpro").decode("utf-8")
+        
         os.system('find . -name "protected\-*" -type d -execdir rename "s/.+/'+self.protected_encrypted+'/" {} \; >/dev/null 2>&1')
-        'find . -name "protected\-*" -type d -execdir rename "s/.+/protected-1234/" {} \; >/dev/null 2>&1'
+        #'find . -name "protected\-*" -type d -execdir rename "s/.+/protected-1234/" {} \; >/dev/null 2>&1'
         os.system('find . -name "pdf\-*" -type d -execdir rename "s/.+/'+self.encrypted_pdf+'/" {} \; >/dev/null 2>&1')
         
         marques = list(self.df.drop_duplicates(subset=["modele", "marque", "generation"]).marque)

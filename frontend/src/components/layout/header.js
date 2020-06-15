@@ -80,7 +80,7 @@ export class Header extends Component {
     }
     render() {
         return (
-            <nav>
+            <nav id="header-container">
                 <ul className="header snap-on-root">
                     
                     <li onClick={()=> this.props.switchTab("index")} className={this.props.onglet === "index" ? "active" : "not_active"}><img src={static_img+"/logo-black.png"}/></li>
