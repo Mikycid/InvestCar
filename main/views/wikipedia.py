@@ -25,38 +25,66 @@ def getImage(request):
 
 def get_wiki_image(query):
     WIKI_REQUEST = 'http://fr.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=original&titles='
+    EN_WIKI_REQUEST = 'http://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=original&titles='
     query = modelFormatter.wikiModelFormatter(query)
     
     search_term = query.split(" ")
     for i in range(len(search_term) - 1):
         search_term[i] = search_term[i].lower().capitalize()
-    print(" ".join(search_term))
+    search_term = " ".join(search_term)
+    search_term = modelFormatter.resultFormatter(search_term)
+    print(search_term)
+    # Looking into EN wikipedia
     try:
-        search_term = " ".join(search_term)
-        wikipedia.set_lang('fr')
-        wkpage = wikipedia.WikipediaPage(title = search_term)
+        
+        wikipedia.set_lang('en')
+        wkpage = wikipedia.WikipediaPage(title=search_term)
         title = wkpage.title
-        response  = requests.get(WIKI_REQUEST+title)
+        response = requests.get(EN_WIKI_REQUEST+title)
         json_data = response.json()
         img_link = list(json_data['query']['pages'].values())[0]['original']['source']
-        return img_link        
+        return img_link 
     except:
-        search_term = query.split(" ")
-        for i in range(len(search_term) - 1):
-            search_term[i] = search_term[i].lower().capitalize()
-        search_term.pop()
-        search_term = " ".join(search_term)
+    #EN failed, try FR
         try:
-            
             wikipedia.set_lang('fr')
-            wkpage = wikipedia.WikipediaPage(title = search_term)
+            wkpage = wikipedia.WikipediaPage(title=search_term)
             title = wkpage.title
             response  = requests.get(WIKI_REQUEST+title)
             json_data = response.json()
             img_link = list(json_data['query']['pages'].values())[0]['original']['source']
-            return img_link      
-        except:  
-            return 0
+            return img_link  
+        except:
+            #FR failed, try EN with no gen
+            search_term = query.split(" ")
+            for i in range(len(search_term) - 1):
+                search_term[i] = search_term[i].lower().capitalize()
+            search_term.pop()
+            search_term = " ".join(search_term)
+            search_term = modelFormatter.resultFormatter(search_term)
+            print(search_term)
+            try:
+                
+                wikipedia.set_lang('en')
+                wkpage = wikipedia.WikipediaPage(title=search_term)
+                title = wkpage.title
+                response  = requests.get(EN_WIKI_REQUEST+title)
+                json_data = response.json()
+                img_link = list(json_data['query']['pages'].values())[0]['original']['source']
+                return img_link  
+            #EN with no gen failed, try FR with no gen
+            except:
+                try:
+                    
+                    wikipedia.set_lang('fr')
+                    wkpage = wikipedia.WikipediaPage(title=search_term)
+                    title = wkpage.title
+                    response  = requests.get(WIKI_REQUEST+title)
+                    json_data = response.json()
+                    img_link = list(json_data['query']['pages'].values())[0]['original']['source']
+                    return img_link  
+                except:  
+                    return 0
 
 @cache_page(60*120)
 def getMainPageImages(request):

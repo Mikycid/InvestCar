@@ -48,11 +48,6 @@ export class Content extends Component {
             });
             
         });
-        try {
-            document.getElementsByClassName("header_not_main")[0].className = "header";
-        } catch (e) {
-
-        }
     }
     componentDidUpdate(){
         if(this.props.onglet === "index" && !this.state.has_loaded){

@@ -865,15 +865,18 @@ class DataMachine(Thread):
         for i in zipcodes_dpt:
             if len(i) == 2:
                 df_sorted_zipcode = df_sorted[df_sorted["code postal"].str[0:2] == i]
-            if not len(df_sorted_zipcode):
+                if not len(df_sorted_zipcode):
 
-                if i == "2A":
-                    df_sorted_zipcode = df_sorted[(df_sorted["code postal"].str[0:3] == "201") | (df_sorted["code postal"].str[0:3] == "200")]
-                elif i == "2B":
-                    df_sorted_zipcode = df_sorted[(df_sorted["code postal"].str[0:3] == "202")]
-                if i[0] == "0":
-                    df_sorted_zipcode = df_sorted[(df_sorted["code postal"].str[0] == i[1])]
-            mean_prices.append(round(df_sorted_zipcode.prix.mean(), 2))
+                    if i == "2A":
+                        df_sorted_zipcode = df_sorted[(df_sorted["code postal"].str[0:3] == "201") | (df_sorted["code postal"].str[0:3] == "200")]
+                    elif i == "2B":
+                        df_sorted_zipcode = df_sorted[(df_sorted["code postal"].str[0:3] == "202")]
+                    if i[0] == "0":
+                        df_sorted_zipcode = df_sorted[(df_sorted["code postal"].str[0] == i[1])]
+                mean_prices.append(round(df_sorted_zipcode.prix.mean(), 2))
+            elif len(i) == 3:
+                df_sorted_zipcode = df_sorted[df_sorted["code postal"].str[0:3] == i]
+                mean_prices.append(round(df_sorted_zipcode.prix.mean(), 2))
         return list(zip(zipcodes_dpt, mean_prices))
     
     def getItemDir(self, string):

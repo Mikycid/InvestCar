@@ -12,7 +12,6 @@ export class Comparator extends Component {
             vues: {},
             favs: [],
             selected_vue: 0,
-            is_renaming: false,
             del_first_click: false,
             add_item_name: "",
             has_loaded: false,
@@ -105,24 +104,61 @@ export class Comparator extends Component {
         
     }
     renameViewClick(){
-        if (!this.state.is_renaming){
-            document.getElementById("view-name-compare").innerHTML = "<input name='view-name' value='"+document.getElementById("view-name-compare").innerHTML+"'/>";
-            
-            this.setState({is_renaming: true});
-        } else {
-            this.renameView();
-        }
+        const input_rename = document.createElement("input");
+        input_rename.name = "view-name";
+        input_rename.value = document.getElementById("view-name-text").innerHTML;
+
+        const input_valid = document.createElement("button");
+        input_valid.innerHTML = "Valider";
+        input_valid.onclick = (e)=>this.renameView(e);
+
+        const form_rename = document.createElement("form");
+        form_rename.appendChild(input_rename);
+        form_rename.appendChild(input_valid);
+        
+        const parent = document.getElementById("view-name-compare");
+        parent.innerHTML = "";
+        parent.appendChild(form_rename);
+        
     }
-    renameView(){
+    renameView(e){
+        e.preventDefault();
         let new_name = document.getElementsByName("view-name")[0].value;
         fetch('/renameView?view='+this.state.selected_vue+'&name='+new_name)
         .then(res=>res.json())
         .then((results)=>{
             this.setState({
                 vues: results.new_view,
-                is_renaming: false,
             });
-            document.getElementById("view-name-compare").innerHTML = this.state.vues[this.state.selected_vue].name;
+            const view_name_compare = document.getElementById("view-name-compare");
+            view_name_compare.innerHTML = "";
+            
+            const view_name_text = document.createElement("span");
+            view_name_text.id = "view-name-text";
+            view_name_text.innerHTML = this.state.vues[this.state.selected_vue].name;
+
+            const btn_container = document.createElement("span");
+
+            const btn_rename = document.createElement("button");
+            btn_rename.onclick = ()=>this.renameViewClick();
+            btn_rename.innerHTML = "Renommer";
+
+            const btn_delete = document.createElement("button");
+            btn_delete.id = "delete-btn";
+            btn_delete.onclick = ()=>this.deleteView();
+            btn_delete.innerHTML = "Supprimmer";
+
+            const btn_look_items = document.createElement("button");
+            btn_look_items.id = "items-view-list-management-btn";
+            btn_look_items.innerHTML = "Voir les items";
+            btn_look_items.onclick = ()=>this.popItemManager();
+
+            btn_container.appendChild(btn_rename);
+            btn_container.appendChild(btn_delete);
+            btn_container.appendChild(btn_look_items);
+
+            view_name_compare.appendChild(view_name_text);
+            view_name_compare.appendChild(btn_container);
 
         })
     }
@@ -229,7 +265,7 @@ export class Comparator extends Component {
                         <select default="Liste des favoris" id="favs-select-list">
                             <option value="Liste des favoris">Liste des favoris</option>
                             {this.state.favs.map((item, step)=>(
-                                <option key={step}>{item}</option>
+                                <option key={step}>{item.replace("slashcharacter001", "/")}</option>
                             ))}
                         </select><br/>
                         <button onClick={()=>this.viewItemManage()}>Ajouter à la vue</button>

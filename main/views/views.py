@@ -25,8 +25,6 @@ def is_premium(user):
     return user.groups.filter(name='Premium').exists() or user.is_superuser
 
 def askIfPremium(request):
-    print(request.user.username)
-    print(is_premium(request.user))
     return JsonResponse({'is_premium' :is_premium(request.user)})
 
 def getUser(request):

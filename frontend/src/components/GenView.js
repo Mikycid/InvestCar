@@ -163,12 +163,14 @@ export class GenView extends Component {
         for(let i=0;i<slicker.length;i++){
             slicker[i].onclick = ()=>this.slider.slickGoTo(i);
         }
+        document.getElementById("main-title").innerHTML = this.props.item.replace("slashcharacter001", "/");
     }
     
     
     componentWillUnmount(){
         this._isMounted = false;
         document.onkeydown = ()=>{};
+        document.getElementById("main-title").innerHTML = "InvestCar"
     }
     filterZipCodes(car){
         fetch('/filterZipCodes?modele='+this.props.item.split(" ").join('_')+'&car='+car)
@@ -553,7 +555,7 @@ export class GenView extends Component {
                                         </option>
                                         {Object.keys(this.state.graphs).map((item, step)=>(
                                             <option value={item} key={step}>
-                                                {item.split("_").join(" ")}
+                                                {item.split("_").join(" ").replace("slashcharacter001", "/")}
                                             </option>
                                         ))}
                                     </select>
@@ -605,7 +607,7 @@ export class GenView extends Component {
                                         </option>
                                         {Object.keys(this.state.graphs).map((item, step)=>(
                                             <option value={item} key={step}>
-                                                {item.split("_").join(" ")}
+                                                {item.split("_").join(" ").replace("slashcharacter001", "/")}
                                             </option>
                                         ))}
                                     </select>

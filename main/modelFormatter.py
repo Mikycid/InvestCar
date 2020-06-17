@@ -13,3 +13,14 @@ def wikiModelFormatter(model):
         return " ".join(result)
     else:
         return result
+
+def resultFormatter(model):
+    #Si le nom du modèle écrit sur wikipédia est différent d'un mot capitalisé, on le formatte ici.
+    result = model.split(" ")
+    if "Tt" in result:
+        result = " ".join(result[0:result.index("Tt")]) + " TT " + " ".join(result[result.index("Tt") + 1:])
+    
+    if type(result) == list:
+        return " ".join(result)
+    else:
+        return result
