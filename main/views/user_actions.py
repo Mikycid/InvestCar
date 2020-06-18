@@ -73,8 +73,10 @@ def connexion(request):
             error = True
         if error:
             return JsonResponse({'error': error})
+        else:
+            return JsonResponse({'error': error, 'username': username, 'email': email, 'group': group})
     else:
-        return JsonResponse({'error': error, 'username': username, 'email': email, 'group': group})
+        return JsonResponse({'error': True})
 
 
 

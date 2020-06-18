@@ -17,7 +17,7 @@ export class AddItem extends Component {
     }
     componentDidMount(){
         this._isMounted = true;
-        fetch('/getModelDatasComparator?modele='+this.props.item)
+        fetch('/getModelDatasComparator?modele='+this.props.item.replace("/", "slashcharacter001"))
         .then(res=>res.json())
         .then((results)=>{
             if(this._isMounted){

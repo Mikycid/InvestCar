@@ -122,7 +122,7 @@ export class SearchFrame extends Component {
                             <label htmlFor="modele">&nbsp;Modèles&nbsp;</label>
                         </span>    : ""
                         }
-                        {window.innerWidth < 1100 ? <br/> :  ""}
+                        {window.innerWidth < 800 ? <br/> :  ""}
                         {this.props.generation.length > 0 ?
                             <span>
                                 <input type="radio" name="generation" value="generation" checked onChange={(e)=>this.querySome(e)} className="radio-filter"/>
@@ -153,7 +153,7 @@ export class SearchFrame extends Component {
                             </li>
                         )}
                     </span>
-                    {this.props.modele.length == 0 && this.props.marque.length == 0 ?
+                    {this.props.modele.length == 0 && this.props.marque.length == 0 && this.props.generation.length == 0 ?
                         <li className="search-header-middle">
                             Aucun élément ne correspond à votre recherche
                         </li> : ""

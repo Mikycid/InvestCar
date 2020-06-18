@@ -42,10 +42,12 @@
     .loupe {
         background:url(http://www.larevuedekenza.fr/wp-content/themes/quarter/images/sidebar/loupe.png) no-repeat center;
         width: 40px;
+        min-width: 40px !important;
         height: 40px;
         position: relative;
         left: -20px;
         border: none;
+        z-index: 100;
     }
     .loupe:focus{
         border:none;
@@ -57,6 +59,7 @@
         position: absolute;
         right: 0;
         height: 60px;
+        max-width: 7vw;
         cursor: pointer;
         z-index: 1000;
         display: inline-block !important;

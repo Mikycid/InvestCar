@@ -51,9 +51,8 @@ class DataMachine(Thread):
         self.protected_encrypted = "protected-"+Fernet(self.key).encrypt(b"protected").decode("utf-8")
         self.encrypted_pdf = "pdf-"+Fernet(self.key).encrypt(b"pdfpro").decode("utf-8")
         
-        os.system('find . -name "protected\-*" -type d -execdir rename "s/.+/'+self.protected_encrypted+'/" {} \; >/dev/null 2>&1')
-        #'find . -name "protected\-*" -type d -execdir rename "s/.+/protected-1234/" {} \; >/dev/null 2>&1'
-        os.system('find . -name "pdf\-*" -type d -execdir rename "s/.+/'+self.encrypted_pdf+'/" {} \; >/dev/null 2>&1')
+        os.system(r'find . -name "protected\-*" -type d -execdir rename "s/.+/'+self.protected_encrypted+r'/" {} \; >/dev/null 2>&1')
+        os.system(r'find . -name "pdf\-*" -type d -execdir rename "s/.+/'+self.encrypted_pdf+r'/" {} \; >/dev/null 2>&1')
         
         marques = list(self.df.drop_duplicates(subset=["modele", "marque", "generation"]).marque)
         modeles = list(self.df.drop_duplicates(subset=["modele", "marque", "generation"]).modele)
@@ -188,9 +187,9 @@ class DataMachine(Thread):
     def update_files_encryption(self):
         self.key = Fernet.generate_key()
         self.protected_encrypted = "protected-"+Fernet(self.key).encrypt("protected").decode("utf-8")
-        os.system('find . -name "protected\-*" -type d -execdir rename "s/.+/'+self.protected_encrypted+'/" {} \; >/dev/null 2>&1')
+        os.system(r'find . -name "protected\-*" -type d -execdir rename "s/.+/'+self.protected_encrypted+r'/" {} \; >/dev/null 2>&1')
         self.encrypted_pdf = "pdf-"+Fernet(self.key).encrypt("protected").decode("utf-8")
-        os.system('find . -name "pdf\-*" -type d -execdir rename "s/.+/'+self.encrypted_pdf+'/" {} \; >/dev/null 2>&1')
+        os.system(r'find . -name "pdf\-*" -type d -execdir rename "s/.+/'+self.encrypted_pdf+r'/" {} \; >/dev/null 2>&1')
 
     def run(self):
         timer_update_plots = datetime.datetime.now()

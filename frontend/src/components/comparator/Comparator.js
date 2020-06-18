@@ -132,7 +132,7 @@ export class Comparator extends Component {
             });
             const view_name_compare = document.getElementById("view-name-compare");
             view_name_compare.innerHTML = "";
-            
+
             const view_name_text = document.createElement("span");
             view_name_text.id = "view-name-text";
             view_name_text.innerHTML = this.state.vues[this.state.selected_vue].name;
