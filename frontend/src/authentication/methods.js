@@ -13,7 +13,15 @@ export const authenticate = (username, password) =>{
         fetch('/connexion?username='+username+'&password='+token.encode(password))
         .then(res=>res.json())
         .then((results)=>{
-            login(results.username, password, results.email, results.group);
+            if(!results.error){
+                login(results.username, password, results.email, results.group);
+            } else {
+                function alertNoRefresh(){
+                    alert("Nom d'utilisateur ou mot de passe incorrect");
+                    return false
+                }
+                alertNoRefresh();
+            }
         });
     }
 }

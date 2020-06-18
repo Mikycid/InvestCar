@@ -34,7 +34,8 @@ export class Comparator extends Component {
             try{
                 this.selectVue("0", 0);
             } catch (e) {}
-        }})
+        }});
+        
     }
     componentWillUnmount(){
         document.getElementsByClassName("header")[0].style.animation = "0.3s header-deploy forwards";
@@ -250,13 +251,13 @@ export class Comparator extends Component {
                 <div id="msg-alert"></div>
                 <a onClick={()=>this.props.goBack()} id="quit-compare-btn">X</a>
                 <div id="compare-view">
-                    {this.state.has_loaded ? 
+                    {this.state.has_loaded && Object.keys(this.state.vues).contains(this.state.selected_vue) ? 
                         <CompareView items={this.state.vues[this.state.selected_vue].items} format={(str)=>this.formatGraphType(str)}/> : ""
                     }
                     
                 </div>
                 <div id="item-pannel">
-                    {this.state.add_item_name.length && Object.keys(this.state.vues).length ?
+                    {this.state.add_item_name.length && Object.keys(this.state.vues).contains(this.state.selected_vue) ?
                     <AddItem vues={this.state.vues} item={this.state.add_item_name} addItemIntoView={(item, vue)=>this.addItemIntoVue(item, vue)} quitView={()=>this.quitAddView()}/> : ""
                     }
                 </div>
@@ -315,7 +316,7 @@ export class Comparator extends Component {
 
                 </div>
                 <div id="item-manager">
-                    {this.state.has_loaded ? 
+                    {this.state.has_loaded && Object.keys(this.state.vues).contains(this.state.selected_vue) ? 
                     <ItemManager 
                         items={this.state.vues[this.state.selected_vue].items}
                         newItemPosition={(item_number, new_pos)=>this.newItemPosition(item_number, new_pos)}

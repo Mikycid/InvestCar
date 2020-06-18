@@ -7,16 +7,17 @@ export class SearchFrame extends Component {
         
 
         window.onscroll = (e) => {
+            try{
             if (!document.getElementById('search').contains(event.target) && !document.getElementById('form-query').contains(event.target) && !document.getElementById('search-frame').contains(event.target)){
                 document.getElementById("search-frame").style.display = "none";
-            }
+            }} catch(e) {}
         }
         window.onclick = (e) => {
-           
+            try{
             if (!document.getElementById('search').contains(event.target) && !document.getElementById('form-query').contains(event.target) && !document.getElementById('search-frame').contains(event.target)){
                 document.getElementById("search-frame").style.display = "none";
                 document.getElementsByName("search-input")[0].value = "";
-            }
+            }} catch(e) {}
                
             
         }
