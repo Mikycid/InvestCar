@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import Cookies from 'universal-cookie';
 import TableCard from './layout/TableCard.js';
+import HelpInfo from './layout/helpInfo.js';
 
 const cookies = new Cookies();
 
@@ -15,6 +16,7 @@ export class List extends Component {
             page_nb: parseInt(this.props.page),
             page: parseInt(this.props.page),
             firsttime: true,
+            toogle_info: false,
         };
         
     }
@@ -30,7 +32,10 @@ export class List extends Component {
                         modeles: result.modeles, 
                         motors: result.motors,
                         page_nb: result.page_nb,
-                    });})
+                    });
+                ;})
+
+        
         document.getElementById("table-index-car").style.display = "block";
         document.getElementById("table-index-car").style.animation = "1s fadein forwards ease-in";
         document.getElementById("loading").style.display = "none";          
@@ -59,7 +64,11 @@ export class List extends Component {
     componentWillUnmount(){
         document.body.style.overflow = "hidden";
     }
-    
+    toogleInfo(){
+        this.setState({
+            toogle_info: !this.state.toogle_info,
+        });
+    }
     
     render() {
         return (
@@ -68,8 +77,12 @@ export class List extends Component {
                 <p id="loading">
                     Loading...
                 </p>
-                <div id="table-index-car">
                 
+                <div id="table-index-car">
+                    {this.state.toogle_info || window.innerWidth < 1200 ? 
+                        <HelpInfo /> : ""
+                    }
+                    
                     
                     
                     
@@ -89,6 +102,9 @@ export class List extends Component {
                             
                     ))}
                     </ul>
+                    {window.innerWidth > 1200 ? 
+                        <p onClick={()=>this.toogleInfo()} id="toogle-infos-list">Informations</p> : ""
+                    }
                     
                     <ul id="page-frame">
                         <li onClick={()=>this.goToPage(this.state.page - 1)} className="arrow not_active_page">

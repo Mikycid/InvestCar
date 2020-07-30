@@ -22,10 +22,31 @@
         width: calc(100%);
         height: 300px;
     }
+    #page-frame{
+        position: relative;
+        top: 50px;
+    }
 }
 @media screen and (min-width: 800px){
+    #table-index-car{
+        position: relative;
+        top:60px;
+        width: 100%;
+        height: calc(100vh - 60px);
+        display: none;
+        opacity: 0;
+        overflow: auto;
+    }
+    .list-car{
+        top: 28px;
+    }
     .list-car > li {
         width: calc(100% / 2);
+        height: 250px;
+    }
+    #page-frame{
+        position: relative;
+        top: 60px;
     }
 }
 @media screen and (min-width: 1200px){
@@ -49,6 +70,12 @@
     #page-frame{
         position: relative;
         top: 60px;
+    }
+    #toogle-infos-list{
+        position: absolute;
+        top: 50%;
+        left: 10px;
+        cursor: pointer;
     }
 }
 

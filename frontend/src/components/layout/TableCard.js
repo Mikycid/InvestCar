@@ -5,19 +5,20 @@ export class TableCard extends Component {
         const pourcentages = document.getElementsByClassName("pourcentage_"+this.props.step);
         for(let i =0;i<pourcentages.length;i++){
             pourcentages[i].style.fontSize = "20px";
-            if(parseFloat(pourcentages.innerHTML) > 1){
+            if(parseFloat(pourcentages[i].innerHTML) > 1){
                 pourcentages[i].style.color = "green";
 
             } else {
                 pourcentages[i].style.color = "#750303";
             }
+            
         }
     }
     componentDidUpdate(){
         const pourcentages = document.getElementsByClassName("pourcentage_"+this.props.step);
         for(let i =0;i<pourcentages.length;i++){
             pourcentages[i].style.fontSize = "20px";
-            if(parseFloat(pourcentages.innerHTML) > 1){
+            if(parseFloat(pourcentages[i].innerHTML) > 1){
                 pourcentages[i].style.color = "green";
 
             } else {
@@ -39,7 +40,7 @@ export class TableCard extends Component {
                         
                         <div className="float">
                         {this.props.motors.map((item, step)=>(
-                                <p key={step}><strong>{item[0]} CV</strong></p>
+                                <p key={step}><strong  className={item[3].replace("<","c-").replace("+", "m") + " to-color"}>{item[0]} CV</strong></p>
                         ))}
                         </div>
                         <div className="float">
@@ -49,7 +50,7 @@ export class TableCard extends Component {
                         </div>
                         <div className="float">
                         {this.props.motors.map((item, step)=>(
-                                <p key={step}><span className={"pourcentage_"+this.props.step}>{item[2]} %</span> </p>
+                                <p key={step}><span className={"pourcentage_"+this.props.step}>{String((item[2] * 100 - 100).toFixed(2)).replace('-200', "NC").replace('.00', "")}{item[2] != -1 ? "%" : ""}</span> </p>
                         ))}
                         </div>
                         

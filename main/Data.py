@@ -15,18 +15,13 @@ from reportlab.platypus import BaseDocTemplate, Paragraph, PageBreak, Image, Tab
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 from reportlab.lib.units import mm
+from reportlab.lib import colors
 from svglib.svglib import svg2rlg
 from . import PrototypeData
 from cryptography.fernet import Fernet
 
 
-FILES = [
-    "data/models_database/Audi.csv",
-    "data/models_database/Peugeot.csv",]
-"""    "data/models_database/Ferrari.csv",
-    "data/models_database/Renault.csv",
-    "data/models_database/BMW.csv",
-    "data/models_database/Alpine.csv"]"""
+FILES = ["data/models_database/all_models.csv"]
 STATES = [
     "<5000km",
     "<50000km",
@@ -43,6 +38,8 @@ class DataMachine(Thread):
     
     def __init__(self):
         Thread.__init__(self)
+
+        time_calc = datetime.datetime.now()
         self.df = pd.DataFrame()
         
         self.prototype_data = PrototypeData.PrototypeData()
@@ -51,54 +48,14 @@ class DataMachine(Thread):
         self.protected_encrypted = "protected-"+Fernet(self.key).encrypt(b"protected").decode("utf-8")
         self.encrypted_pdf = "pdf-"+Fernet(self.key).encrypt(b"pdfpro").decode("utf-8")
         
+        print("renaming files ...")
         os.system(r'find . -name "protected\-*" -type d -execdir rename "s/.+/'+self.protected_encrypted+r'/" {} \; >/dev/null 2>&1')
         os.system(r'find . -name "pdf\-*" -type d -execdir rename "s/.+/'+self.encrypted_pdf+r'/" {} \; >/dev/null 2>&1')
+        print("files renamed")
+        print("doing percentage list and sorting...")
         
-        marques = list(self.df.drop_duplicates(subset=["modele", "marque", "generation"]).marque)
-        modeles = list(self.df.drop_duplicates(subset=["modele", "marque", "generation"]).modele)
-        generations = list(self.df.drop_duplicates(subset=["modele", "marque", "generation"]).generation)
-        
-        self.markmodeles = list(self.df.drop_duplicates(subset=["modele", "marque", "generation"]).marque + " " +
-                                self.df.drop_duplicates(subset=["modele", "marque", "generation"]).modele + " " +
-                                self.df.drop_duplicates(subset=["modele", "marque", "generation"]).generation)
-               
-        motors = []
-        motors_mean = []
-        motors_percentages = []
-        self.motors_end = []
-        self.max_model_entries = 0
-        percentages = []
-        for i in range(len(marques)):
-            percentages.append(round(self.percentageVartiation(marques[i], modeles[i], generations[i], df=self.df), 4))
-            motor_df = list(self.df[(self.df["marque"] == marques[i])
-                                & (self.df["modele"] == modeles[i])
-                                & (self.df["generation"] == generations[i])].chevaux_din.drop_duplicates())
-            motors.append([])
-            motors_mean.append([])
-            motors_percentages.append([])
-            nb_datas = len(self.df[(self.df["marque"] == marques[i]) & (self.df["modele"] == modeles[i]) & (self.df["generation"] == generations[i])].generation)
-            if nb_datas > self.max_model_entries:
-                self.max_model_entries = nb_datas
-            for motor in motor_df:
-                mean = round(self.df[(self.df["marque"] == marques[i])
-                                & (self.df["modele"] == modeles[i])
-                                & (self.df["generation"] == generations[i])
-                                & (self.df["chevaux_din"] == motor)].prix.mean(), 4)
-                if len(motors[i]) < 3:
-                    motors[i].append(motor)
-                    motors_mean[i].append(mean)
-                    motors_percentages[i].append(round(self.percentageVartiation(marques[i], modeles[i], generations[i], df=self.df, mot=motor), 4))
-                else:
-                    if mean > min(motors_mean[i]):
-                        motors[i][motors_mean[i].index(min(motors_mean[i]))] = motor
-                        motors_mean[i][motors_mean[i].index(min(motors_mean[i]))] = mean
-                        motors_percentages[i].append(round(self.percentageVartiation(marques[i], modeles[i], generations[i], df=self.df, mot=motor), 4))
-            
-            self.motors_end.append(sorted(list(zip(motors[i], motors_mean[i], motors_percentages[i])), key=lambda x: x[2], reverse=True))
-                
-        self.percentages = percentages
-        sorted_df = list(zip(self.markmodeles, self.percentages, self.motors_end))
-        self.markmodeles, self.percentages, self.motors_end = zip(*sorted(sorted_df, key=lambda x: x[1], reverse=True))
+        self.updateMainVars()
+        print("Temps de lancement : " + str((datetime.datetime.now() - time_calc).total_seconds()))
         
             
             
@@ -112,55 +69,93 @@ class DataMachine(Thread):
 
 
     def updateMainVars(self):
-        today = datetime.date.today()
-        today_minus_three_month = today - datetime.timedelta(days=90)
-        marques = list(self.df[self.df.date > today_minus_three_month.strftime("%d-%m-%Y")].drop_duplicates(subset=["modele", "marque", "generation"]).marque)
-        modeles = list(self.df[self.df.date > today_minus_three_month.strftime("%d-%m-%Y")].drop_duplicates(subset=["modele", "marque", "generation"]).modele)
-        generations = list(self.df[self.df.date > today_minus_three_month.strftime("%d-%m-%Y")].drop_duplicates(subset=["modele", "marque", "generation"]).generation)
+        marques = list(self.df.drop_duplicates(subset=["modele", "marque", "generation"]).marque)
+        modeles = list(self.df.drop_duplicates(subset=["modele", "marque", "generation"]).modele)
+        generations = list(self.df.drop_duplicates(subset=["modele", "marque", "generation"]).generation)
         
+        self.markmodeles = list(self.df.drop_duplicates(subset=["modele", "marque", "generation"]).marque + " " +
+                                self.df.drop_duplicates(subset=["modele", "marque", "generation"]).modele + " " +
+                                self.df.drop_duplicates(subset=["modele", "marque", "generation"]).generation)
+               
         motors = []
         motors_mean = []
         motors_percentages = []
+        motors_state = []
         self.motors_end = []
         self.max_model_entries = 0
         percentages = []
+        indexes = []
+        counter_indexes = 0
         for i in range(len(marques)):
-            percentages.append(round(self.percentageVartiation(marques[i], modeles[i], generations[i], df=self.df), 4))
-            motor_df = list(self.df[(self.df["marque"] == marques[i])
+            df_sorted = self.df[(self.df["marque"] == marques[i])
                                 & (self.df["modele"] == modeles[i])
-                                & (self.df["generation"] == generations[i])].chevaux_din.drop_duplicates())
+                                & (self.df["generation"] == generations[i])]
+            if len(df_sorted) < 60:
+                indexes.append(i)
+        for i in indexes:
+            del marques[i - counter_indexes]
+            del modeles[i  - counter_indexes]
+            del generations[i  - counter_indexes]
+            del self.markmodeles[i  - counter_indexes]
+            counter_indexes += 1
+                
+        for i in range(len(marques)):
+            df_sorted = self.df[(self.df["marque"] == marques[i])
+                                & (self.df["modele"] == modeles[i])
+                                & (self.df["generation"] == generations[i])]
+            motor_df = list(df_sorted.chevaux_din.drop_duplicates())
             motors.append([])
             motors_mean.append([])
             motors_percentages.append([])
-            nb_datas = len(self.df[(self.df["marque"] == marques[i]) & (self.df["modele"] == modeles[i]) & (self.df["generation"] == generations[i])].generation)
+            motors_state.append([])
+            nb_datas = len(df_sorted)
             if nb_datas > self.max_model_entries:
                 self.max_model_entries = nb_datas
             for motor in motor_df:
-                mean = round(self.df[(self.df["marque"] == marques[i])
-                                & (self.df["modele"] == modeles[i])
-                                & (self.df["generation"] == generations[i])
-                                & (self.df["chevaux_din"] == motor)].prix.mean(), 4)
-                if len(motors[i]) < 3:
-                    motors[i].append(motor)
-                    motors_mean[i].append(mean)
-                    motors_percentages[i].append(round(self.percentageVartiation(marques[i], modeles[i], generations[i], df=self.df, mot=motor), 4))
-                else:
-                    if mean > min(motors_mean[i]):
-                        motors[i][motors_mean[i].index(min(motors_mean[i]))] = motor
-                        motors_mean[i][motors_mean[i].index(min(motors_mean[i]))] = mean
-                        motors_percentages[i].append(round(self.percentageVartiation(marques[i], modeles[i], generations[i], df=self.df, mot=motor), 4))
-            
-            self.motors_end.append(sorted(list(zip(motors[i], motors_mean[i], motors_percentages[i])), key=lambda x: x[2], reverse=True))
+                df_sorted_motor = df_sorted[df_sorted["chevaux_din"] == motor]
+                states = list(df_sorted_motor["etat"].drop_duplicates())
+                for state in states:
+                    df_sorted_state = df_sorted_motor[df_sorted_motor["etat"] == state]
+                    mean = round(df_sorted_state.prix.mean(), 4)
+                    current_percentage = round(self.percentageVartiation(marques[i], modeles[i], generations[i], df=df_sorted_state, mot=motor), 4)
+                    if len(motors[i]) < 3:
+                        motors[i].append(motor)
+                        motors_mean[i].append(mean)
+                        motors_percentages[i].append(current_percentage)
+                        motors_state[i].append(state)
+                    else:
+                        min_percentage = min(motors_percentages[i])
+                        if current_percentage > min_percentage:
+                            index = motors_percentages[i].index(min(motors_percentages[i]))
+                            motors[i][index] = motor
+                            motors_mean[i][index] = mean
+                            motors_percentages[i][index] = current_percentage
+                            motors_state[i][index] = state
+
                 
+            
+                
+            percentages.append(max(motors_percentages[i]))
+            
+            self.motors_end.append(sorted(list(zip(motors[i], motors_mean[i], motors_percentages[i], motors_state[i])), key=lambda x: x[2], reverse=True))
+
+              
         self.percentages = percentages
         sorted_df = list(zip(self.markmodeles, self.percentages, self.motors_end))
+        
         self.markmodeles, self.percentages, self.motors_end = zip(*sorted(sorted_df, key=lambda x: x[1], reverse=True))
+        
     
     def update(self):
         
         self.cleanCsvDatas()
         with open("data/data.pickle", "rb") as f:
-            data_list = pickle.load(f)
+            try:
+                data_list = pickle.load(f)
+            except FileNotFoundError:
+                data_list=[]
+            except EOFError:
+                data_list=[]
         if len(data_list):
             to_update = data_list[0].split(";")
         else:
@@ -339,6 +334,16 @@ class DataMachine(Thread):
             df["modele"] = df["modele"].str.upper()
             df["transmition"] = df["transmition"].str.upper()
             df["energie"] = df["energie"].str.upper()
+            df["carrosserie"] = df["carrosserie"].apply(lambda x: "Hatchback" if re.match("(.+)?hatchback(.+)?", x, re.IGNORECASE)
+                                                                 else "Monospace" if re.match("(.+)?monospace(.+)?", x, re.IGNORECASE) or re.match("(.+)?minivan(.+)?", x, re.IGNORECASE)
+                                                                 else "Break" if re.match("(.+)?break(.+)?", x, re.IGNORECASE)
+                                                                 else "Berline" if re.match("(.+)?berline(.+)?", x, re.IGNORECASE) or re.match("(.+)?sportback(.+)?", x, re.IGNORECASE)
+                                                                 else "Coupé" if re.match("(.+)?coupé(.+)?", x, re.IGNORECASE)
+                                                                 else "4x4/SUV" if re.match("(.+)?suv(.+)?", x, re.IGNORECASE) or re.match("(.+)?pick-up(.+)?", x, re.IGNORECASE) or re.match("(.+)?crossover(.+)?", x, re.IGNORECASE)
+                                                                 else "Cabriolet" if re.match("(.+)?cabriolet(.+)?", x, re.IGNORECASE) or re.match("(.+)roadster(.+)", x, re.IGNORECASE) or re.match("(.+)targa(.+)", x, re.IGNORECASE)
+                                                                 or re.match("(.+)spyder(.+)", x, re.IGNORECASE)
+                                                                 else x
+                                                                 )
             df["carrosserie"] = df["carrosserie"].apply(lambda x: x.replace("/", "slashcharacter001"))
             df["generation"] = df["generation"].apply(lambda x: x.replace("/", "slashcharacter001"))
             df["marque"] = df["marque"].apply(lambda x: x.replace("/", "slashcharacter001"))
@@ -367,13 +372,19 @@ class DataMachine(Thread):
         
     def makePdf(self, marque, model, gen):
         styles = {'title':ParagraphStyle('title', fontSize=70, leading=100*mm, alignment=TA_CENTER),
-                  'subtitle':ParagraphStyle('subtitle', fontSize=50, leading=100*mm, alignment=TA_CENTER),
+                  'title-carosserie':ParagraphStyle('title-carosserie', fontSize=90, leading=90, alignment=TA_CENTER, textColor=colors.HexColor('#0A2A69')),
+                  'title-state':ParagraphStyle('title-state', fontSize=40, leading=40, alignment=TA_CENTER, textColor=colors.HexColor('#B7B7B9')),
+                  'subtitle':ParagraphStyle('subtitle', fontSize=50, leading=100*mm, alignment=TA_CENTER, textColor=colors.HexColor('#750303')),
                   'subsubtitle':ParagraphStyle('subsubtitle', fontSize=35, leading=100*mm, alignment=TA_CENTER),
+                  'sub-title-moteur':ParagraphStyle('sub-title-moteur', fontSize=40, leading=40*mm, alignment=TA_CENTER, textColor=colors.HexColor("#6C6766")),
+                  'sub-sub-title-moteur':ParagraphStyle('sub-sub-title-moteur', fontSize=15, leading=10*mm, textColor=colors.HexColor('#750303')),
                   'legend': ParagraphStyle('legend', fontSize=12, leading=8*mm, alignment=TA_CENTER),
                   'legend_proto': ParagraphStyle('legend', fontSize=12, leading=8*mm, alignment=TA_RIGHT),
                   'red_legend': ParagraphStyle('legend', fontSize=12, leading=8*mm, alignment=TA_CENTER, textColor='red'),
                   'percentageNegative': ParagraphStyle('percentage', fontSize=16, leading=20, alignment=TA_CENTER, borderWidth=1, borderColor='red', textColor='red'),
-                  'percentagePositive': ParagraphStyle('percentage', fontSize=16, leading=20, alignment=TA_CENTER, borderWidth=1, borderColor='green', textColor='green')}
+                  'percentagePositive': ParagraphStyle('percentage', fontSize=16, leading=20, alignment=TA_CENTER, borderWidth=1, borderColor='green', textColor='green'),
+                  'text':ParagraphStyle('text', fontSize=14, leading=8*mm),
+                  }
         chart_style = TableStyle([('ALIGN', (0,0), (-1,-1), 'CENTER'),
                                   ('VALIGN', (0,0), (-1,-1), 'CENTER')])
         proto_style = TableStyle([('ALIGN', (0,0), (0,0), 'LEFT'),
@@ -435,6 +446,13 @@ class DataMachine(Thread):
         flowables.append(title1); flowables.append(title2); flowables.append(title3); flowables.append(logo)
         flowables.append(PageBreak())
         flowables.append(page_proto)
+        pdf_description_title = Paragraph("<b>Informations</b>", styles["subtitle"])
+        pdf_description = Paragraph("""
+
+        
+        """, styles["text"])
+        flowables.append(pdf_description_title)
+        flowables.append(pdf_description)
         # Some text
         flowables.append(PageBreak())
         flowables.append(page_proto)
@@ -462,14 +480,17 @@ class DataMachine(Thread):
                 states = os.listdir(os.path.join(path, carr))
                 for state in states:
                     if os.path.isdir(os.path.join(path, carr, state)):
-                        main_title = Paragraph('<b>' + carr + ' ' + state + '</b>', styles['title'])
-                        centered_main_title = Table([[main_title]],
-                                                    colWidths=[716],
-                                                    rowHeights=[950],
-                                                    style=chart_style)
-                        flowables.append(centered_main_title)
+                        
+                        main_carosserie = Paragraph('<b> ' + carr + '</b>', styles['title-carosserie'])
+
+                        main_state = Paragraph('<b>Kilométrage : ' + state + '</b>', styles['title-state'])
+                        flowables.append(Spacer(1,110*mm))
+                        flowables.append(main_carosserie)
+                        flowables.append(Spacer(1,10*mm))
+                        flowables.append(main_state)
                         flowables.append(PageBreak())
                         flowables.append(page_proto)
+                        flowables.append(Spacer(1,100*mm))
                         percentage1 = self.percentageVartiation(marque, model, gen, self.df, car=carr,days_variation=90)
                         percentage2 = self.percentageVartiation(marque, model, gen, self.df, car=carr,days_variation=180)
                         percentage3 = self.percentageVartiation(marque, model, gen, self.df, car=carr,days_variation=365)
@@ -484,33 +505,41 @@ class DataMachine(Thread):
                         mean_price_chart = scale(mean_price_chart, 0.8)
                         flowables.append(mean_price_legend)
                         flowables.append(mean_price_chart)
-                        flowables.append(Spacer(0,20*mm))
+
                         motors = os.listdir(os.path.join(path, carr, state))
                         counter = 1
                         for motor in motors:
                             if os.path.isdir(os.path.join(path, carr, state, motor)):
-                                if counter % 2 == 0:
-                                    flowables.append(PageBreak())
-                                    flowables.append(page_proto)
-                                motor_legend = Paragraph('<i>'+str(counter)+'. '+ motor +' cv</i>', styles['legend'])
+                                
+                                flowables.append(PageBreak())
+                                flowables.append(page_proto)
+                                motor_legend = Paragraph('<b>'+ motor +' cv</b>', styles['sub-title-moteur'])
+                                reg_legend = Paragraph('<b><i>a. Régréssion et prédiction (Sur 30% de l\'échelle de temps)</i></b>', styles['sub-sub-title-moteur'])
                                 reg = svg2rlg(os.path.join(path, carr, state, motor, self.protected_encrypted, 'regression.svg'))
                                 reg.hAlign = 'CENTER'
                                 reg = scale(reg, 0.8)
                                 flowables.append(motor_legend)
+                                flowables.append(reg_legend)
                                 flowables.append(reg)
+
                                 flowables.append(Spacer(0,20*mm))
                                 zipcodes = self.zipCodes(model, marque,gen=gen,car=carr,mot=motor)
+                                zp_meanprices = {i[0]:i[1] for i in self.meanPriceByZipcodes(model, marque, gen=gen, car=carr, mot=motor)}
                                 max_value = 0
-                                table_zipcodes = [["Département", "Pourcentage"]]
+                                table_zipcodes = [["Département", "Pourcentage du volume", "Prix moyen"]]
                                 for i in zipcodes:
                                     if zipcodes.count(i) > max_value:
                                         max_value = zipcodes.count(i)
                                 for i in set(zipcodes):
-                                    table_zipcodes.append([i, round(zipcodes.count(i) / max_value * 100, 2)])
+                                    table_zipcodes.append([i, round(zipcodes.count(i) / max_value * 100, 2), zp_meanprices[i]])
                                 table_zipcodes_flow = Table(table_zipcodes,
-                                                            colWidths=[100*mm, 100*mm],
+                                                            colWidths=[80*mm, 80*mm, 80*mm],
                                                             style=zipcodes_style)
+                                
+                                zipcodes_title = Paragraph('<b><i>b. Répartition du prix/volume par département</i></b>', styles['sub-sub-title-moteur'])
                                 zipcodes_legend = Paragraph('<b>Attention les données selon les départements ne correspondent pas à l\'état du véhicule</b>', styles["red_legend"])
+                                
+                                flowables.append(zipcodes_title)
                                 flowables.append(zipcodes_legend)
                                 flowables.append(table_zipcodes_flow)
 
@@ -597,13 +626,21 @@ class DataMachine(Thread):
         ax.set_ylim((0, max(df_concat.pred) * 1.3))
         ax.plot(df_concat.date, df_concat.pred + df_concat.pred.std(), color='blue', linewidth=2)
         ax.plot(df_concat.date, df_concat.pred - df_concat.pred.std(), color='blue', linewidth=2)
-        ax.legend(("pred", "std"))
+        ax.legend(("Prédiction", "Écart-type"))
         path = os.path.join("./frontend/static/frontend/models/",marque.replace(" ", "_"),model.replace(" ", "_"),gen.replace(" ", "_"),car.replace(" ", "_"),state,str(mot),self.protected_encrypted)
         if not os.path.isdir(path): os.makedirs(path)
         plt.tight_layout()
         plt.savefig(os.path.join(path, "regression.svg"))
         plt.clf()
-    
+    def isModelPlottable(self, df):
+        df.date = pd.to_datetime(df.date, dayfirst=True)
+        last_date = max(list(df.date))
+        min_date = min(list(df.date))
+        if pd.Timedelta(last_date - min_date) > pd.Timedelta(days=31):
+            return True
+        else:
+            return False
+
     def meanPriceByMonthPlt(self, marque, model, state, gen, car, df):
         df_sorted = df[(df["prix"] != "NC")
                         & (df["prix"].notna())
@@ -666,6 +703,10 @@ class DataMachine(Thread):
     
     def plotTransmission(self, marque, model, gen, df, getPercentages=False):
         df_sorted = df[(df["modele"].str.lower() == model.lower()) & (df["marque"].str.lower() == marque.lower()) & (df["generation"].str.upper() == gen.upper())]
+        today = datetime.date.today()
+        today_minus_ts = today - datetime.timedelta(days=365)
+        df_sorted.date = pd.to_datetime(df_sorted.date)
+        df_sorted = df_sorted[(df_sorted["date"] >= pd.Timestamp(today_minus_ts))]
         labels = ['Automatique', 'Manuelle']
         df_sorted["transmition"] = df_sorted["transmition"].apply(lambda x: 0 if x == "Automatique" else 1)
         percentage = len(df_sorted[df_sorted["transmition"] == 0]) / len(df_sorted["transmition"])
@@ -690,6 +731,10 @@ class DataMachine(Thread):
                         & (df["marque"].str.lower() == marque.lower())
                         & (df["energie"] != "-") & (df["energie"].notna())
                         & (df["generation"].str.upper() == gen.upper())]
+        df_sorted.date = pd.to_datetime(df_sorted.date)
+        today = datetime.date.today()
+        today_minus_ts = today - datetime.timedelta(days=365)
+        df_sorted = df_sorted[(df_sorted["date"] >= pd.Timestamp(today_minus_ts))]
         if len(df_sorted):
             labels = ['Essence', 'Diesel', 'GPL', 'Hybride', 'Electrique', "Autres"]
             df_sorted["energie"] = df_sorted["energie"].apply(lambda x: 0 if x.lower() == "essence" else 1 if x.lower() == "diesel" else 2 if x.lower() == "gpl" else 3 if x.lower() == "hybride" else 4 if x.lower()=="electrique" or x.lower() == "électrique" else 5)
@@ -787,12 +832,16 @@ class DataMachine(Thread):
                         print("Plotting transmission for " + marque + " " + modele + " " + gen)
                         self.plotTransmission(marque, modele, gen, df[(df["modele"].str.lower() == modele.lower()) & (df["marque"].str.lower() == marque.lower())])
                         plt.close(plt.gcf())
+                        
+                        
                         print("Plotting motor for " + marque + " " + modele + " " + gen)
                         self.plotMotor(marque, modele, gen, df[(df["modele"].str.lower() == modele.lower()) & (df["marque"].str.lower() == marque.lower())])
                         plt.close(plt.gcf())
+
                         print("Plotting volume for " + marque + " " + modele + " " + gen)
                         self.plotDataVolume(marque, modele, gen, df[(df["modele"].str.lower() == modele.lower()) & (df["marque"].str.lower() == marque.lower())])
                         plt.close(plt.gcf())
+
                         print("Making pdf data for " + marque + " " + modele + " " + gen)
                         self.makePdf(marque, modele, gen)
                         
@@ -807,14 +856,18 @@ class DataMachine(Thread):
             df = df[(df["chevaux_din"] == mot)]
         if car != "*":
             df = df[(df["carrosserie"].str.lower() == car.lower())]
+
+
         df.date = pd.to_datetime(df.date, dayfirst=True)
+
+
         today = datetime.date.today()
         today_minus_one_month = today - datetime.timedelta(days=30)
         today_minus_three_months = today - datetime.timedelta(days=days_variation)
         today_minus_four_months = today - datetime.timedelta(days=days_variation+30)
-        mean_last_month = df[(df["date"] >= today_minus_one_month.strftime("%Y-%m-%d"))].prix.mean()
-        mean_three_month_ago = df[(df["date"] >= today_minus_four_months.strftime("%Y-%m-%d"))
-                                 & (df["date"] <= today_minus_three_months.strftime("%Y-%m-%d"))].prix.mean()
+        mean_last_month = df[(df["date"] >= pd.Timestamp(today_minus_one_month))].prix.mean()
+        mean_three_month_ago = df[(df["date"] >= pd.Timestamp(today_minus_four_months))
+                                 & (df["date"] <= pd.Timestamp(today_minus_three_months))].prix.mean()
         
         if not isnan(mean_three_month_ago) and not isnan(mean_last_month):
             percentage = mean_last_month / mean_three_month_ago
@@ -824,9 +877,12 @@ class DataMachine(Thread):
         return percentage
 
 
-    def zipCodes(self, model, marque, gen="*", car="*", mot="*"):
+    def zipCodes(self, model, marque, gen="*", car="*", mot="*", timespan=90):
         df = self.df[(self.df["modele"].str.lower() == model.lower()) & (self.df["marque"].str.lower() == marque.lower())]
-        
+        today = datetime.date.today()
+        today_minus_ts = today - datetime.timedelta(days=timespan)
+        df.date = pd.to_datetime(df.date, dayfirst=True)
+        df = df[(df["date"] >= pd.Timestamp(today_minus_ts))]
         if gen != "*":
             df = df[df["generation"].str.lower() == gen.lower()]
         
@@ -849,16 +905,23 @@ class DataMachine(Thread):
              else "2B"))
         return result
     
-    def meanPriceByZipcodes(self, model, marque, gen="*", car="*", mot="*"):
+    def meanPriceByZipcodes(self, model, marque, gen="*", car="*", mot="*", timespan=90):
         df = self.df
         if gen != "*":
             df = df[df["generation"].str.lower() == gen.lower()]
         if car != "*":
             df = df[df["carrosserie"].str.lower() == car.lower()]
         if mot != "*":
-            df = df[df["chevaux_din"].str.lower() == mot.lower()]
+            df = df[df["chevaux_din"].astype('float') == float(mot)]
+
         df["code postal"] = df["code postal"].astype("str")
-        zipcodes_dpt = set(self.zipCodes(model, marque, gen, car))
+
+        df.date = pd.to_datetime(df.date, dayfirst=True)
+        today = datetime.date.today()
+        today_minus_ts = today - datetime.timedelta(days=timespan)
+        df = df[(df["date"] >= pd.Timestamp(today_minus_ts))]
+
+        zipcodes_dpt = set(self.zipCodes(model, marque, gen, car, mot, timespan))
         mean_prices = []
         df_sorted = df[(df.modele.str.lower() == model.lower()) & (df.marque.str.lower() == marque.lower())]
         for i in zipcodes_dpt:

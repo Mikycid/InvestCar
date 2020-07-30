@@ -1,9 +1,10 @@
-import React, { Component, PureComponent } from 'react'
-import France from '@svg-maps/france.departments'
-import { SVGMap } from 'react-svg-map'
-import FilterCard from './layout/FilterCard.js'
+import React, { Component, PureComponent } from 'react';
+import France from '@svg-maps/france.departments';
+import { SVGMap } from 'react-svg-map';
+import FilterCard from './layout/FilterCard.js';
 import ModelPercentage from './layout/modelPercentage.js';
 import InfosModel from './layout/InfosModel.js';
+import InfosBulles from './layout/InfosBulles.js';
 import Slider from 'react-slick';
 
 Object.defineProperties(Array.prototype, {
@@ -31,7 +32,7 @@ export class GenView extends Component {
         }
         this._isMounted = false;
         this.ids_list = ["images-model", "graph-prix-moyen", "svg-container", "volume-data", "infos-model", "buy-frame"];
-        
+        this.tooltipTimeout = null;
         this.state = {
             graphs : {},
             zipcodes: [],
@@ -66,6 +67,11 @@ export class GenView extends Component {
             previous_scroll_pos : 0,
             crypted: 0,
             is_fav: false,
+            protected_pdf: 0,
+            tooltip: false,
+            tooltip_type: "",
+            tooltip_event: {},
+            map_actual_filter: "Filtre actuel => Toutes les carrosseries, jours inclus jusqu'à aujourd'hui : 90",
         };
         this.slider = 0;
     }
@@ -77,6 +83,22 @@ export class GenView extends Component {
             this.setState({
                 is_premium: results.is_premium,
             });
+            if(results.is_premium){
+                fetch('/getEncryptedPdf')
+                .then(res=>res.json())
+                .then((results)=>{
+                    this.setState({
+                        protected_pdf: results.crypted,
+                    });
+                });
+                fetch('/getEncryptedProtected')
+                .then(res=>res.json())
+                .then((results)=>{
+                    this.setState({
+                        crypted: results.crypted,
+                    });
+                })
+            }
         });
         
         fetch('/genView?modele='+this.props.item.split(" ").join('_'))
@@ -98,6 +120,7 @@ export class GenView extends Component {
                     generation: results.generation,
                     crypted: results.crypted,
                 });
+                console.log(results.crypted);
                 this.colorMapWithMeanPriceVolume();
                 document.getElementsByClassName("loading")[0].style.animation = "0.8s fadeout ease-out forwards";
                 setTimeout(()=>{
@@ -106,14 +129,16 @@ export class GenView extends Component {
                 }, 1000);
             }
         });
-        fetch('/isFav?model='+this.props.item)
-        .then(res=>res.json())
-        .then((results)=>{
-            if(this._isMounted){
-                this.setState({
-                    is_fav: results.is_fav,
-                });
-        }});
+        if(this.props.user.username != 'Anonymous'){
+            fetch('/isFav?model='+this.props.item)
+            .then(res=>res.json())
+            .then((results)=>{
+                if(this._isMounted){
+                    this.setState({
+                        is_fav: results.is_fav,
+                    });
+            }});
+        }
         fetch('/getMainPercentages?modele='+this.props.item.split(" ").join('_'))
         .then(res=>res.json())
         .then((results)=>{
@@ -164,6 +189,8 @@ export class GenView extends Component {
             slicker[i].onclick = ()=>this.slider.slickGoTo(i);
         }
         document.getElementById("main-title").innerHTML = this.props.item.replace("slashcharacter001", "/");
+        const page_size = document.getElementsByClassName("page-content")[0];
+        page_size.style.overflowY = "hidden";
     }
     
     
@@ -171,14 +198,17 @@ export class GenView extends Component {
         this._isMounted = false;
         document.onkeydown = ()=>{};
         document.getElementById("main-title").innerHTML = "InvestCar"
+        const page_size = document.getElementsByClassName("page-content")[0];
+        page_size.style.overflowY = "auto";
     }
-    filterZipCodes(car){
-        fetch('/filterZipCodes?modele='+this.props.item.split(" ").join('_')+'&car='+car)
+    filterZipCodes(car, date){
+        fetch('/filterZipCodes?modele='+this.props.item.split(" ").join('_')+'&car='+car+'&days='+date)
         .then(res=>res.json())
         .then((results)=>{
             this.setState({
                 zipcodes: results.zipcodes,
                 meanprices: results.meanprice,
+                map_actual_filter: "Filtre actuel => Carrosserie : "+ car.replace("*", "toutes les carrosseries") +", Jours inclus jusqu'à aujourd'hui : " + date,
             });
             this.changeColor({'target':{'value':document.getElementById("select-map-type").value}});
             
@@ -186,7 +216,7 @@ export class GenView extends Component {
     }
     
     resetMap(){
-        for (let i=1;i<95;i++){
+        for (let i=1;i<=95;i++){
             if (i<10){
                 document.getElementById("0"+String(i)).style.fill = "black";
                 document.getElementById("0"+String(i)).onmouseover = ()=>{};
@@ -231,7 +261,7 @@ export class GenView extends Component {
                     let last_color = document.getElementById(String(item)).style.fill;
                     document.getElementById(String(item)).style.fill = "orange";
                     const tooltip = document.createElement("p");
-                    tooltip.innerHTML = "Département n°" + item + " : " + String((this.state.zipcodes.count(item) / max_value * 100).toFixed(2)) + "% du maximum du volume.";
+                    tooltip.innerHTML = "Département n°" + item + "<br/>" + String((this.state.zipcodes.count(item) / max_value * 100).toFixed(2)) + "% du maximum du volume.";
                     tooltip.style.position = "absolute";
                     tooltip.style.textAlign = "center";
                     tooltip.style.width = "150px";
@@ -261,7 +291,7 @@ export class GenView extends Component {
                 const node = document.createElement("li");
                 node.onmouseover = ()=>{
                     const tooltip = document.createElement("p");
-                    tooltip.innerHTML = "Département de " + overseas[step].split(":")[0] + " : " + String((i / max_value * 100).toFixed(2)) + "% du maximum du volume.";
+                    tooltip.innerHTML = "Département de " + overseas[step].split(":")[0] + "<br/>" + String((i / max_value * 100).toFixed(2)) + "% du maximum du volume.";
                     tooltip.style.position = "absolute";
                     tooltip.style.textAlign = "center";
                     tooltip.style.font = "12px italic";
@@ -310,7 +340,7 @@ export class GenView extends Component {
                     let last_color = document.getElementById(String(item[0])).style.fill;
                     document.getElementById(String(item[0])).style.fill = "orange";
                     const tooltip = document.createElement("p");
-                    tooltip.innerHTML = "Département n°" + item[0] + " : " + String((item[1] / max_value * 100).toFixed(2)) + "% du maximum de la moyenne de prix, soit " + item[1] + "&euro;.";
+                    tooltip.innerHTML = "Département n°" + item[0] + "<br/>" + String((item[1] / max_value * 100).toFixed(2)) + "% du maximum de la moyenne de prix, soit " + item[1] + "&euro;.";
                     
                     tooltip.style.position = "absolute";
                     tooltip.style.textAlign = "center";
@@ -340,7 +370,7 @@ export class GenView extends Component {
                 const node = document.createElement("li");
                 node.onmouseover = ()=>{
                     const tooltip = document.createElement("p");
-                    tooltip.innerHTML = "Département de " + overseas[step].split(":")[0] + " : " + String((i / max_value * 100).toFixed(2)) + "% du maximum de la moyenne de prix, soit " + item[1] + "&euro;.";
+                    tooltip.innerHTML = "Département de " + overseas[step].split(":")[0] + "<br/>" + String((i / max_value * 100).toFixed(2)) + "% du maximum de la moyenne de prix, soit " + overseas[step].split(":")[1] + "&euro;.";
                     tooltip.style.position = "absolute";
                     tooltip.style.textAlign = "center";
                     tooltip.style.left = event.clientX+ window.innerWidth * 3 + "px";
@@ -484,6 +514,23 @@ export class GenView extends Component {
             this.setState({is_fav: false});
         }
     }
+    makeTooltipInfo(e, type){
+        clearTimeout(this.tooltipTimeout);
+        e.persist();
+        if(e.type == "mouseover"){
+            this.tooltipTimeout = setTimeout(()=>{
+                this.setState({
+                    tooltip: true,
+                    tooltip_type: type,
+                    tooltip_event: e,
+                });
+            }, 1000);
+        } else {
+            this.setState({
+                tooltip: false,
+            });
+        }
+    }
     render() {
         var slider_settings = {
             ref: slider => this.slider = slider,
@@ -506,12 +553,15 @@ export class GenView extends Component {
                     <li onMouseOver={(e)=>this.hoverTab(2)} onMouseOut={(e)=>this.outTab(2)} className="scroller-list-component"><p>Régréssion</p><span className="indexing-tab"></span></li>
                     <li onMouseOver={(e)=>this.hoverTab(3)} onMouseOut={(e)=>this.outTab(3)} className="scroller-list-component"><p>Carte</p><span className="indexing-tab"></span></li>
                     <li onMouseOver={(e)=>this.hoverTab(4)} onMouseOut={(e)=>this.outTab(4)} className="scroller-list-component"><p>Variation</p><span className="indexing-tab"></span></li>
-                    <li onMouseOver={(e)=>this.hoverTab(5)} onMouseOut={(e)=>this.outTab(5)} className="scroller-list-component"><p>Volume (données)</p><span className="indexing-tab"></span></li>
-                    <li onMouseOver={(e)=>this.hoverTab(6)} onMouseOut={(e)=>this.outTab(6)} className="scroller-list-component"><p>Volume (materiel)</p><span className="indexing-tab"></span></li>
+                    <li onMouseOver={(e)=>this.hoverTab(5)} onMouseOut={(e)=>this.outTab(5)} className="scroller-list-component"><p>Offre (Volume)</p><span className="indexing-tab"></span></li>
+                    <li onMouseOver={(e)=>this.hoverTab(6)} onMouseOut={(e)=>this.outTab(6)} className="scroller-list-component"><p>Offre (Détail)</p><span className="indexing-tab"></span></li>
                     <li onMouseOver={(e)=>this.hoverTab(7)} onMouseOut={(e)=>this.outTab(7)} className="scroller-list-component"><p>Informations</p><span className="indexing-tab"></span></li>
                     <li onMouseOver={(e)=>this.hoverTab(8)} onMouseOut={(e)=>this.outTab(8)} className="scroller-list-component"><p>Liens</p><span className="indexing-tab"></span></li>
                 </ul>
                 </div>
+                {this.state.tooltip && window.innerWidth >= 800 ?
+                    <InfosBulles type={this.state.tooltip_type} event={this.state.tooltip_event}/> : "" 
+                }
                 <div className="gen-view">
                 <Slider {...slider_settings}>
                     <div className="images-model slide-element">
@@ -526,19 +576,28 @@ export class GenView extends Component {
                             <h1>{this.state.marque.replace("slashcharacter001", "/")}</h1>
                             <h2>{this.state.model.replace("slashcharacter001", "/")}</h2>
                             <h3>{this.state.generation.replace("slashcharacter001", "/")}</h3>
+                            {!this.state.is_premium ? 
                             <p onClick={()=>this.props.switchTab("payment", {item:{url:this.state.url_pie.join('/')+'/'+this.props.item.split(" ").join("_"),
                                                                                 item:this.props.item,
                                                                                 crypted: this.state.crypted }})}>
                                                                                         Acheter le pdf </p>
-                            <div className="etoile">
-                                <img
-                                    src={!this.state.is_fav ? static_img+"/tofav.png" : static_img+"/faved.png"}
-                                    id="fav-btn" alt="Ajouter aux favoris"
-                                    onMouseOver={!this.state.is_fav ? ()=>this.addToFavHover() : ()=>{}} 
-                                    onMouseOut={!this.state.is_fav ? ()=>this.addToFavOut() : ()=>{}}
-                                    onClick={()=>this.addToFav()}
-                                    />
-                            </div>
+
+                             : <p>
+                                <a href={this.state.url_pie.join('/')+'/'+this.state.protected_pdf+'/'+this.props.item.split(" ").join('_')+'.pdf'} download>Télécharger le pdf</a>
+                                                                                        
+                             </p>
+                            }
+                            {this.props.user.username != "Anonymous" ?                                                            
+                                <div className="etoile">
+                                    <img
+                                        src={!this.state.is_fav ? static_img+"/tofav.png" : static_img+"/faved.png"}
+                                        id="fav-btn" alt="Ajouter aux favoris"
+                                        onMouseOver={!this.state.is_fav ? ()=>this.addToFavHover() : ()=>{}} 
+                                        onMouseOut={!this.state.is_fav ? ()=>this.addToFavOut() : ()=>{}}
+                                        onClick={()=>this.addToFav()}
+                                        />
+                                </div> : ""
+                            }
                         </div>
                     </div>
                     
@@ -547,7 +606,7 @@ export class GenView extends Component {
                             
                             
                             <div className="manage-component-frame">
-                                <h2>Prix moyen</h2>
+                                <h2 onMouseOver={(e)=>this.makeTooltipInfo(e,"Prix moyen")} onMouseOut={(e)=>this.makeTooltipInfo(e,"") } alt="">Prix moyen</h2>
                                 <form id="mean-price-select-form">
                                     <select onChange={(e)=>this.changeCarr(e)}>
                                         <option value="head" name="head">
@@ -576,7 +635,6 @@ export class GenView extends Component {
                                 <div>
                                     <p><a href={this.state.url.join("/")+"/meanPriceCsv.csv"} download={"prix_moyen_"+this.props.item.split(" ").join("_")+".csv"}>Téléchargez</a> ces données au format CSV.</p>
                                     <button onClick={(e)=>this.resetMeanPriceFilter(e)}>Séléctionner un autre graphique</button>
-                                    <button onClick={()=>this.props.addComparison({type:'graph', url:this.state.url.join("/")+"/meanPriceByMonth.svg", name:"Graphique de prix moyen pour " + this.props.item})}>Ajouter au comparateur</button>
                                 </div>
                                 :
                                 <p className="fill-form">Remplissez le formulaire ci-dessus pour afficher le graphique du prix moyen.</p>
@@ -588,7 +646,7 @@ export class GenView extends Component {
                                     <img src={this.state.url.join("/")+"/meanPriceByMonth.svg"} alt=""/>
                                 
                                 : 
-                                    <img src={static_img+"/empty_plot.svg"} alt=""/>
+                                    <img src={static_img+"/empty_plot.svg"} />
                                     
                                 
                                 
@@ -597,7 +655,7 @@ export class GenView extends Component {
                         </div>
                         <div className="graph-reg">
                             <div className="manage-component-frame">
-                                <h2>Régréssion</h2>
+                                <h2 onMouseOver={(e)=>this.makeTooltipInfo(e,"Régréssion")} onMouseOut={(e)=>this.makeTooltipInfo(e,"") }>Régréssion</h2>
                                 {this.state.is_premium ? 
                                 <div>
                                 <form id="reg-select-form">
@@ -656,7 +714,7 @@ export class GenView extends Component {
                     
                         <div className="svg-container active-view">
                             <div className="manage-component-frame">
-                            <h2>Statistiques selon le département</h2>
+                            <h2 onMouseOver={(e)=>this.makeTooltipInfo(e,"Carte")} onMouseOut={(e)=>this.makeTooltipInfo(e,"") }>Statistiques selon le département</h2>
                             
                             
                                 <form className="form-select-container">
@@ -669,7 +727,7 @@ export class GenView extends Component {
                                     </span>
                                 </form>
                                 <span className="genview-card-sep"></span>
-                                    <FilterCard itemObject={this.state.graphs} filterzip={(gen, car)=>this.filterZipCodes(gen, car)}/>
+                                    <FilterCard itemObject={this.state.graphs} filterzip={(gen, car)=>this.filterZipCodes(gen, car)} actual_filter={this.state.map_actual_filter}/>
                                 
                             </div>
                             <div className="genview-frame-content">
@@ -683,7 +741,7 @@ export class GenView extends Component {
                         </div>
                         <div className="percentage-container">
                             <div className="manage-component-frame">
-                                <h2>Pourcentage de variation selon les x derniers jours</h2>
+                                <h2 onMouseOver={(e)=>this.makeTooltipInfo(e,"Variation")} onMouseOut={(e)=>this.makeTooltipInfo(e,"") }>Variation</h2>
                                 {this.state.is_premium ?
                                     <ModelPercentage item={this.props.item}/> : ""
                                 }
@@ -701,7 +759,7 @@ export class GenView extends Component {
                     
                         <div className="volume-data">
                             <div className="manage-component-frame">
-                            <h2>Evolution du volume de données</h2>
+                            <h2 onMouseOver={(e)=>this.makeTooltipInfo(e,"Offre (volume)")} onMouseOut={(e)=>this.makeTooltipInfo(e,"")} >Offre (Volume)</h2>
                             </div>
                             <div className="genview-frame-content">
                             {this.state.is_premium ?
@@ -720,7 +778,7 @@ export class GenView extends Component {
                         </div>
                         <div className="pie-graphs-container">
                             <div className="manage-component-frame">
-                            <h2>Volume matériel</h2>
+                            <h2 onMouseOver={(e)=>this.makeTooltipInfo(e,"Offre (détail)")} onMouseOut={(e)=>this.makeTooltipInfo(e,"")}>Offre (Détail)</h2>
                             </div>
                             <div className="genview-frame-content">
                                 <div className="pie-imgs">

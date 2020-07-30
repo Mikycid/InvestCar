@@ -33,7 +33,6 @@ def get_wiki_image(query):
         search_term[i] = search_term[i].lower().capitalize()
     search_term = " ".join(search_term)
     search_term = modelFormatter.resultFormatter(search_term)
-    print(search_term)
     # Looking into EN wikipedia
     try:
         
@@ -62,7 +61,6 @@ def get_wiki_image(query):
             search_term.pop()
             search_term = " ".join(search_term)
             search_term = modelFormatter.resultFormatter(search_term)
-            print(search_term)
             try:
                 
                 wikipedia.set_lang('en')

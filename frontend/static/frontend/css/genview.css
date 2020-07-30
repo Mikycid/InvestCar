@@ -45,7 +45,7 @@
     }
     .gen-view{
         opacity: 0;
-        height: calc(100vh - 60px);
+        height: calc(100% - 60px);
         position: relative;
         top: 60px;
     }
@@ -53,6 +53,9 @@
         display: grid !important;
         grid-template-rows: 100vh;
         grid-template-columns: 50vw 50vw;
+        height: calc(100vh - 60px);
+        position: relative;
+        top: 60px;
     }
     .manage-component-frame{
         position: absolute;
@@ -66,9 +69,11 @@
         border-right: 1px solid rgb(117,3,3);
         height: calc((100vh - 60px) * 0.8);
     }
-    .manage-component-frame select, .manage-component-frame button{
+    .manage-component-frame select, .manage-component-frame button, .manage-component-frame input{
         min-width: 90%;
         width: 90%;
+        box-sizing: border-box;
+        margin: 0;
     }
     .genview-card-sep{
         height: 30px;
@@ -103,9 +108,14 @@
         padding: 10px;
         
     }
-    .title-frame p {
+    .title-frame p, .title-frame a {
         cursor: pointer;
         text-decoration: underline;
+        color: #750303;
+    }
+    .title-frame a:visited{
+        text-decoration: underline;
+        color: #750303;
     }
     .image-frame img{
         max-width: 50vw;
@@ -214,8 +224,17 @@
         position: relative;
         overflow: hidden;
     }
+    #overseas-list{
+        list-style: none;
+        color: white;
+    }
     
-    
+    .volume-data span{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
     
 }
 @media screen and (max-width: 800px){
@@ -391,6 +410,11 @@
             inset 0 -2px 6px rgba(0,0,0,0.4);
         position: relative;
         overflow: hidden;
+    }
+    .etoile{
+        position: relative;
+        bottom: 15px;
+        z-index: 1000;
     }
 }
 .gen-view h1, .gen-view h2, .gen-view h3{

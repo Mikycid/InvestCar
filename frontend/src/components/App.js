@@ -25,6 +25,9 @@ class App extends Component {
     };
   }
   componentDidMount(){
+    if(!cookies.get('lastTab')){
+      fetch("/incrementVisitor")
+    }
     fetch('/isUserLoggedIn')
     .then(res=>res.json())
     .then((results)=>{

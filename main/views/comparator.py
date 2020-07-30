@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.cache import cache_page
-from .views import is_premium, getData
+from .views import getData, is_premium
 import re
 import os
 

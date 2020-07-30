@@ -14,6 +14,8 @@ import About from '../About.js';
 import PaypalFrame from './PaypalFrame.js';
 import Thanks from '../thanks.js';
 import Comparator from '../comparator/Comparator.js';
+import Statistics from '../../staff/Statistics.js';
+
 const cookies = new Cookies();
 
 export class Content extends Component {
@@ -189,6 +191,11 @@ export class Content extends Component {
                         <Comparator items={this.props.compared_items} goBack={()=>this.props.goBack()}/>
                     </div>
                     : ""
+                }
+                {this.props.onglet === "admin_statistics" ? 
+                    <div className="page-content">
+                        <Statistics />
+                    </div> : ""
                 }
             </div>
         )

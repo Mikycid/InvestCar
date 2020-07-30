@@ -83,7 +83,7 @@ export class Header extends Component {
             <nav id="header-container">
                 <ul className="header snap-on-root">
                     
-                    <li onClick={()=> this.props.switchTab("index")} className={this.props.onglet === "index" ? "active" : "not_active"}><img src={static_img+"/logo-black.png"}/></li>
+                    <li onClick={()=> this.props.switchTab("index")} className={this.props.onglet === "index" ? "active" : "not_active"}><img src={static_img+"/invest-car-logo-60.png"}/></li>
                     <span id="back-button" onClick={()=>this.props.goBack()}>&#x2190;</span>
                     <li onClick={()=> this.props.switchTab("main_stats")} className={this.props.onglet === "main_stats" ? "active" : "not_active"}>Statistiques</li>
                     {this.props.user.username == 'Anonymous' ?
@@ -103,7 +103,7 @@ export class Header extends Component {
                 </ul>
                 { this.state.searchFrame ? <SearchFrame onglet={this.props.onglet} marque={this.state.results_marques} modele={this.state.results_modeles} generation={this.state.results_gen} switchTab={(i, item)=>this.props.switchTab(i, item)}/> : ""}
                 <ProfileMenu user={this.props.user} actualise={(u)=>this.props.actualise(u)} close={()=>this.toogleProfile()} switchTab={(tab, item)=>this.props.switchTab(tab, item)}/>
-                {window.innerWidth > 1100 ?
+                {window.innerWidth > 1100 && (this.props.user.group.includes('Premium') || this.props.user.group.includes('admin')) ?
                     <img src={static_img+"/compare.png"} alt="Comparer" onClick={()=>this.props.switchTab("comparator")} id="compare-button-hd"/> : ""
                 }
             </nav>

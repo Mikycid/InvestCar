@@ -15,39 +15,20 @@ from django.views.decorators.cache import cache_page
 from cryptography.fernet import Fernet
 from main.models import Buyings
 
+
+
+
 data = Data.DataMachine()
 data.start()
+
+def askIfPremium(request):
+    return JsonResponse({'is_premium' :is_premium(request.user)})
+def is_premium(user):
+    return user.groups.filter(name='Premium').exists() or user.is_superuser
 
 def getData():
     return data
 
-def is_premium(user):
-    return user.groups.filter(name='Premium').exists() or user.is_superuser
-
-def askIfPremium(request):
-    return JsonResponse({'is_premium' :is_premium(request.user)})
-
-def getUser(request):
-    if request.user.is_authenticated:
-        if request.user.is_superuser:
-            group = ["admin"]
-        else: 
-            group = serializers.serialize('json',request.user.groups.all())
-        return JsonResponse({
-            'username': request.user.username,
-            'password': Fernet(b"GkHf0-y9IMYoiGsTbUfVj1wtBtolEMLuK2awH9WEu5Y=").encrypt(request.user.password.encode()).decode('utf-8'),
-            'email': request.user.email,
-            'group': group,
-            'error': False
-        })
-    else:
-        return JsonResponse({'error': True})
-
-def isUserLoggedIn(request):
-    if request.user.is_authenticated:
-        return JsonResponse({'isLoggedIn': True})
-    else:
-        return JsonResponse({'isLoggedIn': False})
  
 def getEncryptedPdf(request):
     return JsonResponse({'crypted': data.encrypted_pdf})
@@ -80,7 +61,7 @@ def registerCommand(request):
     
     return JsonResponse({'error': False})
 
-@cache_page(60*120)
+@cache_page(60*180)
 def modelList(request):
     page = int(request.GET["page"])
     return JsonResponse({
@@ -89,7 +70,7 @@ def modelList(request):
             'motors': data.motors_end[(page - 1) *9:(page - 1) * 9 + 9],
         })
 
-@cache_page(60*120)
+@cache_page(60*180)
 def modelView(request):
     modele = request.GET["modele"]
     modele = data.query(" ".join(modele.split("_")), "modele")
@@ -117,7 +98,7 @@ def query(request):
         'generations': list(generations)
     })
 
-@cache_page(60*120)
+@cache_page(60*180)
 def genView(request):
     modele_file = request.GET["modele"]
     modele = data.query(" ".join(modele_file.split("_")), "generation")
@@ -126,7 +107,6 @@ def genView(request):
     
     graphs = {}
     carr_types = os.listdir(base_url)
-    crypted = 0
     for carr_type in carr_types:
         if os.path.isdir(os.path.join(base_url, carr_type)) and not re.match(r"^[protected\-|pdf\-]", carr_type):
             print(carr_type)
@@ -138,14 +118,11 @@ def genView(request):
                 for mot in mots:
                     if not os.path.isfile(os.path.join(base_url, carr_type, state, mot)):
                         graphs[carr_type][state][mot] = os.listdir(os.path.join(base_url,carr_type,state, mot))
-        elif re.match(r"^protected\-", carr_type):
-            crypted = carr_type
         
     if is_premium(request.user):
         zipcodes = data.zipCodes(modele.modele.iloc[0], modele.marque.iloc[0], gen=modele.generation.iloc[0])
     else:
         zipcodes = []
-        crypted = 0
 
     mean_price_by_zipcodes = data.meanPriceByZipcodes(modele.modele.iloc[0], modele.marque.iloc[0], gen=modele.generation.iloc[0])
     
@@ -159,13 +136,12 @@ def genView(request):
                          'modele':modele.modele.iloc[0],
                          'marque':modele.marque.iloc[0],
                          'generation':modele.generation.iloc[0],
-                         'crypted': crypted,
                          })
 
 
 
 
-@cache_page(60*120)
+@cache_page(60*180)
 def bestPercentages(request):
     
     results = {
@@ -176,20 +152,20 @@ def bestPercentages(request):
 
 
 
-@cache_page(60*120)
+@cache_page(60*180)
 def filterZipCodes(request):
     modele = request.GET["modele"]
     modele = data.query(" ".join(modele.split("_")), "generation")
     filtre_carr = " ".join(request.GET["car"].split("_"))
+    filtre_days = " ".join(request.GET["days"].split("_"))
     if is_premium(request.user):
-        zipcodes = data.zipCodes(modele.modele.iloc[0], modele.marque.iloc[0], car=filtre_carr)
+        zipcodes = data.zipCodes(modele.modele.iloc[0], modele.marque.iloc[0], car=filtre_carr, timespan=int(filtre_days))
     else:
         zipcodes = []
-    mean_price_by_zipcodes = data.meanPriceByZipcodes(modele.modele.iloc[0], modele.marque.iloc[0], car=filtre_carr)
-    print(mean_price_by_zipcodes)
+    mean_price_by_zipcodes = data.meanPriceByZipcodes(modele.modele.iloc[0], modele.marque.iloc[0], car=filtre_carr, timespan=int(filtre_days))
     return JsonResponse({'zipcodes':zipcodes,'meanprice':mean_price_by_zipcodes})
 
-@cache_page(60*120)
+@cache_page(60*180)
 def getMainPercentages(request):
     modele = request.GET["modele"]
     modele = data.query(" ".join(modele.split("_")), "generation")
@@ -208,7 +184,7 @@ def getPercentageVartation(request):
     return JsonResponse({'percentage': percentage})
 
 
-@cache_page(60*120)
+@cache_page(60*180)
 def getModelInfos(request):
     modele = request.GET["modele"]
     modele = data.query(" ".join(modele.split("_")), "generation")

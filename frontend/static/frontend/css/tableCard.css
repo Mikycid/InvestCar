@@ -83,3 +83,25 @@
 
 }
 
+.c-50000km{
+    background-color: green;
+}
+.c-5000km{
+    background-color: #092a07;
+    color: white;
+}
+.c-150000km{
+    background-color: rgb(120,240,120);
+}
+.c-250000km{
+    background-color: #4d3232;
+    color: white;
+}
+.c-250000mkm{
+    background-color: brown;
+}
+
+.to-color{
+    padding: 2px;
+}
+

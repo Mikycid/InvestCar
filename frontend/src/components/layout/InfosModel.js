@@ -4,7 +4,7 @@ export class InfosModel extends Component {
     constructor(props){
         super(props);
         this._isMounted = false;
-        this.nb_tables = window.innerHeight <= 1100 ? [0,1] : [0,1,2,3]
+        this.nb_tables = window.innerWidth <= 1100 ? [0,1] : [0,1,2,3]
         this.state = {
             motors: [],
             series: {},

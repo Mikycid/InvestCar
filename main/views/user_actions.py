@@ -9,6 +9,31 @@ from django.core import serializers
 
 data = getData()
 
+
+
+
+def getUser(request):
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            group = ["admin"]
+        else: 
+            group = serializers.serialize('json',request.user.groups.all())
+        return JsonResponse({
+            'username': request.user.username,
+            'password': Fernet(b"GkHf0-y9IMYoiGsTbUfVj1wtBtolEMLuK2awH9WEu5Y=").encrypt(request.user.password.encode()).decode('utf-8'),
+            'email': request.user.email,
+            'group': group,
+            'error': False
+        })
+    else:
+        return JsonResponse({'error': True})
+
+def isUserLoggedIn(request):
+    if request.user.is_authenticated:
+        return JsonResponse({'isLoggedIn': True})
+    else:
+        return JsonResponse({'isLoggedIn': False})
+        
 def addToFavorites(request):
     user = User.objects.get(pk=request.user.id)
     try:
@@ -41,7 +66,10 @@ def getFavorites(request):
     return JsonResponse({'favs':favs})
 
 def isFav(request):
-    user = User.objects.get(pk=request.user.id)
+    try:
+        user = User.objects.get(pk=request.user.id)
+    except:
+        return JsonResponse({'is_fav': False})
     try:
         favs = json.loads(user.profile.favorites)
     except JSONDecodeError:

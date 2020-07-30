@@ -1,4 +1,4 @@
-@media screen and (min-width:1100px){
+@media screen and (min-width:800px){
     
     .header {
         width:80%;
@@ -70,7 +70,7 @@
         position: absolute;
     }
 }
-@media screen and (max-width: 1100px){
+@media screen and (max-width: 800px){
     .header {
         display: flex;
         flex-direction: column;

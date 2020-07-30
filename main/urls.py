@@ -39,4 +39,6 @@ urlpatterns = [
     path('getMapDatas', views.getMapDatas),
     path('deleteItem', views.deleteItem),
     path('isFav', views.isFav),
+    path('getStatsData', views.getStatsData),
+    path('incrementVisitor', views.incrementVisitor),
     ]

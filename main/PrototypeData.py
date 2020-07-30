@@ -18,7 +18,10 @@ class PrototypeData:
 
 
     def classify_gen(self, mod, marque, ann, pui, cyl, car, tra):
-        df_sorted = self.prototypeData[(self.prototypeData["Modèle"].str.lower() == mod.lower()) & (self.prototypeData["Marque"].str.lower() == marque.lower())]
+        df_sorted = self.prototypeData[
+            (self.prototypeData["Modèle"].str.lower() == mod.lower())
+            & (self.prototypeData["Marque"].str.lower() == marque.lower())
+            & (self.prototypeData["Annee"] == float(ann))]
         if len(df_sorted) == 1:
             return df_sorted["Génération"].iloc[0]
         annee = df_sorted["Annee"]
@@ -36,7 +39,6 @@ class PrototypeData:
 
         model = RandomForestClassifier(n_estimators=40)
         X = np.array(list(zip(
-                            annee,
                             cv,
                             cylindree,
                             enc_transmition.transform(transmition),
@@ -50,7 +52,7 @@ class PrototypeData:
             encoded_carb = enc_carb.transform(["nc"])
             encoded_trans = enc_transmition.transform(["nc"])
 
-        return model.predict([[ann,
+        return model.predict([[
                             pui,
                             cyl,
                             encoded_carb,
@@ -58,8 +60,18 @@ class PrototypeData:
                             ]])
 
     def classify_car(self, mod, marque, ann, pui, gen, cyl, car, tra):
-        
-        df_sorted = self.prototypeData[(self.prototypeData["Modèle"].str.lower() == mod.lower()) & (self.prototypeData["Marque"].str.lower() == marque.lower())]
+        if type(gen) == str:
+            df_sorted = self.prototypeData[
+                (self.prototypeData["Modèle"].str.lower() == mod.lower())
+                & (self.prototypeData["Marque"].str.lower() == marque.lower())
+                & (self.prototypeData["Annee"] == float(ann))
+                & (self.prototypeData["Génération"].str.lower() == gen)]
+        else:
+            df_sorted = self.prototypeData[
+                (self.prototypeData["Modèle"].str.lower() == mod.lower())
+                & (self.prototypeData["Marque"].str.lower() == marque.lower())
+                & (self.prototypeData["Annee"] == float(ann))
+                & (self.prototypeData["Génération"].str.lower() == gen[0])]
         carrosserie = df_sorted["Série"].str.lower().apply(lambda x: "Hatchback" if re.match("(.+)?hatchback(.+)?", x, re.IGNORECASE)
                                                                     else "Monospace" if re.match("(.+)?monospace(.+)?", x, re.IGNORECASE) or re.match("(.+)?minivan(.+)?", x, re.IGNORECASE)
                                                                     else "Break" if re.match("(.+)?break(.+)?", x, re.IGNORECASE)
@@ -72,8 +84,7 @@ class PrototypeData:
                                                                     )
         if len(df_sorted) == 1:
             return df_sorted["Série"].iloc[0]
-        annee = df_sorted["Annee"]
-        generation = df_sorted["Génération"]
+
         cv = df_sorted["Version"].apply(lambda x: int(re.search(r"(\d+) [cv|ch]", x).group(1)))
         
         carburant = df_sorted["Type de moteur"].str.lower()
@@ -87,12 +98,9 @@ class PrototypeData:
 
         cylindree = df_sorted["Version"].apply(lambda x: float(re.search(r"(\d+\.?\d+)", x).group(1)))
         model = RandomForestClassifier(n_estimators=40)
-        enc_gen = LabelEncoder()
-        enc_gen.fit(generation)
+
         X = np.array(list(zip(
-                            annee,
                             cv,
-                            enc_gen.transform(generation),
                             cylindree,
                             enc_transmition.transform(transmition),
                             enc_carb.transform(carburant)
@@ -109,18 +117,13 @@ class PrototypeData:
             encoded_trans = enc_transmition.transform(["nc"])
         
         result = model.predict([[
-                                ann,
                                 pui,
-                                enc_gen.transform(gen),
                                 cyl,
                                 encoded_carb,
                                 encoded_trans
                                 ]])
         
-        if score > 0.8:
-            return result
-        else :
-            return "predicted " + str(result) + " but score's only " + str(score)  
+        return result
     
     
     

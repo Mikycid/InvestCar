@@ -18,7 +18,9 @@ export class ProfileMenu extends Component {
                         <li onClick={()=>this.props.switchTab('manage_pannel')}>Manage DB</li> : ""
                     }
                     <li onClick={()=>this.logout()}>Déconnexion</li>
-                    <li>Passer Premium</li>
+                    {this.props.user.group.includes("admin") ?
+                        <li onClick={()=>this.props.switchTab('admin_statistics')}>Statistiques</li> : ""
+                    }
                     <li onClick={()=>this.props.close()}>Fermer</li>
                 </ul>
             </div>

@@ -1,0 +1,10 @@
+#main-info-bulle{
+    border: 1px lightgray solid;
+    background-color: #BBB;
+    padding: 2px;
+    max-width: 400px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 10000;
+}
