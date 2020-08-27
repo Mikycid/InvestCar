@@ -51,6 +51,7 @@ export class Content extends Component {
             
         });
     }
+    
     componentDidUpdate(){
         if(this.props.onglet === "index" && !this.state.has_loaded){
             this.setState({

@@ -89,7 +89,7 @@ def getMainPageImages(request):
     images = data.markmodeles[0:5]
     images_url = []
     for image in images:
-        modele = data.query(image, "generation")
+        modele = data.query(image, "carrosserie")
         query = modele.marque.iloc[0] + " " + modele.modele.iloc[0] + " " + int_to_roman(re.search(r"\d+",modele.generation.iloc[0]).group(0))
         images_url.append(get_wiki_image(query))
     return JsonResponse({'images': images_url})

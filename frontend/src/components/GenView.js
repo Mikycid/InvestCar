@@ -76,6 +76,7 @@ export class GenView extends Component {
         this.slider = 0;
     }
     componentDidMount(){
+        console.log(this.props.item);
         this._isMounted = true;
         fetch('/isPremium')
         .then(res=>res.json())

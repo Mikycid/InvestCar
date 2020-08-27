@@ -47,7 +47,6 @@ class DataMachine(Thread):
         self.key = Fernet.generate_key()
         self.protected_encrypted = "protected-"+Fernet(self.key).encrypt(b"protected").decode("utf-8")
         self.encrypted_pdf = "pdf-"+Fernet(self.key).encrypt(b"pdfpro").decode("utf-8")
-        
         print("renaming files ...")
         os.system(r'find . -name "protected\-*" -type d -execdir rename "s/.+/'+self.protected_encrypted+r'/" {} \; >/dev/null 2>&1')
         os.system(r'find . -name "pdf\-*" -type d -execdir rename "s/.+/'+self.encrypted_pdf+r'/" {} \; >/dev/null 2>&1')
@@ -69,13 +68,15 @@ class DataMachine(Thread):
 
 
     def updateMainVars(self):
-        marques = list(self.df.drop_duplicates(subset=["modele", "marque", "generation"]).marque)
-        modeles = list(self.df.drop_duplicates(subset=["modele", "marque", "generation"]).modele)
-        generations = list(self.df.drop_duplicates(subset=["modele", "marque", "generation"]).generation)
+        marques = list(self.df.drop_duplicates(subset=["modele", "marque", "generation", "carrosserie"]).marque)
+        modeles = list(self.df.drop_duplicates(subset=["modele", "marque", "generation", "carrosserie"]).modele)
+        generations = list(self.df.drop_duplicates(subset=["modele", "marque", "generation", "carrosserie"]).generation)
+        carrosseries = list(self.df.drop_duplicates(subset=["modele", "marque", "generation", "carrosserie"]).carrosserie)
         
-        self.markmodeles = list(self.df.drop_duplicates(subset=["modele", "marque", "generation"]).marque + " " +
-                                self.df.drop_duplicates(subset=["modele", "marque", "generation"]).modele + " " +
-                                self.df.drop_duplicates(subset=["modele", "marque", "generation"]).generation)
+        self.markmodeles = list(self.df.drop_duplicates(subset=["modele", "marque", "generation", "carrosserie"]).marque + " " +
+                                self.df.drop_duplicates(subset=["modele", "marque", "generation", "carrosserie"]).modele + " " +
+                                self.df.drop_duplicates(subset=["modele", "marque", "generation", "carrosserie"]).generation + " " +
+                                self.df.drop_duplicates(subset=["modele", "marque", "generation", "carrosserie"]).carrosserie)
                
         motors = []
         motors_mean = []
@@ -89,20 +90,23 @@ class DataMachine(Thread):
         for i in range(len(marques)):
             df_sorted = self.df[(self.df["marque"] == marques[i])
                                 & (self.df["modele"] == modeles[i])
-                                & (self.df["generation"] == generations[i])]
+                                & (self.df["generation"] == generations[i])
+                                & (self.df["carrosserie"] == carrosseries[i])]
             if len(df_sorted) < 60:
                 indexes.append(i)
         for i in indexes:
             del marques[i - counter_indexes]
             del modeles[i  - counter_indexes]
             del generations[i  - counter_indexes]
+            del carrosseries[i - counter_indexes]
             del self.markmodeles[i  - counter_indexes]
             counter_indexes += 1
                 
         for i in range(len(marques)):
             df_sorted = self.df[(self.df["marque"] == marques[i])
                                 & (self.df["modele"] == modeles[i])
-                                & (self.df["generation"] == generations[i])]
+                                & (self.df["generation"] == generations[i])
+                                & (self.df["carrosserie"] == carrosseries[i])]
             motor_df = list(df_sorted.chevaux_din.drop_duplicates())
             motors.append([])
             motors_mean.append([])
@@ -305,7 +309,54 @@ class DataMachine(Thread):
              | (version + " " + marque + " " + modele).str.contains(re.escape(query),regex=True, case=False)
              | (version + " " + modele + " " + marque).str.contains(re.escape(query),regex=True, case=False)
              ]
-    
+        elif column == "carrosserie":
+            marque = self.df["marque"].astype('str')
+            modele = self.df["modele"].astype('str')
+            version = self.df["generation"].astype('str')
+            carrosserie = self.df["carrosserie"].astype('str')
+
+            return self.df[(modele.str.contains("^"+query.upper(), regex=True))
+             | marque.str.contains(query.upper())
+             | (modele + " " + marque + " " + version + " " + carrosserie).str.contains(re.escape(query),regex=True, case=False)
+             | (modele + " " + version + " " + marque + " " + carrosserie).str.contains(re.escape(query),regex=True, case=False)
+             | (modele + " " + version + " " + carrosserie + " " + marque).str.contains(re.escape(query),regex=True, case=False)
+             | (modele + " " + marque + " " + carrosserie + " " + version).str.contains(re.escape(query),regex=True, case=False)
+             | (modele + " " + carrosserie + " " + marque + " " + version).str.contains(re.escape(query),regex=True, case=False)
+             | (modele + " " + carrosserie + " " + version + " " + marque).str.contains(re.escape(query),regex=True, case=False)
+             | (marque + " " + modele + " " + version + " " + carrosserie).str.contains(re.escape(query),regex=True, case=False)
+             | (marque + " " + version + " " + modele + " " + carrosserie).str.contains(re.escape(query),regex=True, case=False)
+             | (marque + " " + version + " " + carrosserie + " " + marque).str.contains(re.escape(query),regex=True, case=False)
+             | (marque + " " + marque + " " + carrosserie + " " + version).str.contains(re.escape(query),regex=True, case=False)
+             | (marque + " " + carrosserie + " " + modele + " " + version).str.contains(re.escape(query),regex=True, case=False)
+             | (marque + " " + carrosserie + " " + version + " " + modele).str.contains(re.escape(query),regex=True, case=False)
+             | (version + " " + marque + " " + modele + " " + carrosserie).str.contains(re.escape(query),regex=True, case=False)
+             | (version + " " + modele + " " + marque + " " + carrosserie).str.contains(re.escape(query),regex=True, case=False)
+             | (version + " " + modele + " " + carrosserie + " " + marque).str.contains(re.escape(query),regex=True, case=False)
+             | (version + " " + marque + " " + carrosserie + " " + modele).str.contains(re.escape(query),regex=True, case=False)
+             | (version + " " + carrosserie + " " + marque + " " + modele).str.contains(re.escape(query),regex=True, case=False)
+             | (version + " " + carrosserie + " " + modele + " " + marque).str.contains(re.escape(query),regex=True, case=False)
+             | (carrosserie + " " + modele + " " + marque + " " + version).str.contains(re.escape(query),regex=True, case=False)
+             | (carrosserie + " " + marque + " " + modele + " " + version).str.contains(re.escape(query),regex=True, case=False)
+             | (carrosserie + " " + marque + " " + version + " " + modele).str.contains(re.escape(query),regex=True, case=False)
+             | (carrosserie + " " + modele + " " + version + " " + marque).str.contains(re.escape(query),regex=True, case=False)
+             | (carrosserie + " " + version + " " + marque + " " + modele).str.contains(re.escape(query),regex=True, case=False)
+             | (carrosserie + " " + version + " " + modele + " " + marque).str.contains(re.escape(query),regex=True, case=False)
+             ]
+
+    def stdCleaner(self, df):
+        print(len(df))
+        for index, row in df.iterrows():
+            df_sorted = df[(df.marque == row.marque) & (df.modele == row.modele) & (df.generation == row.generation) & (df.carrosserie == row.carrosserie) & (df.etat == row.etat) & (df.chevaux_fiscaux == row.chevaux_fiscaux)]
+            print(index)
+            if row.prix < df_sorted.prix.mean() - df_sorted.prix.std() or row.prix > df_sorted.prix.mean() + df_sorted.prix.std():
+                df = df.drop(index)
+            
+        print(len(df))
+        df.to_csv("~/all_models.csv")
+        return df
+
+                
+        
     def cleanCsvDatas(self):
         dfs = []
         for i in range(len(FILES)):
@@ -338,7 +389,7 @@ class DataMachine(Thread):
                                                                  else "Monospace" if re.match("(.+)?monospace(.+)?", x, re.IGNORECASE) or re.match("(.+)?minivan(.+)?", x, re.IGNORECASE)
                                                                  else "Break" if re.match("(.+)?break(.+)?", x, re.IGNORECASE)
                                                                  else "Berline" if re.match("(.+)?berline(.+)?", x, re.IGNORECASE) or re.match("(.+)?sportback(.+)?", x, re.IGNORECASE)
-                                                                 else "Coupé" if re.match("(.+)?coupé(.+)?", x, re.IGNORECASE)
+                                                                 else "Coupé" if re.match("(.+)?coupé|e(.+)?", x, re.IGNORECASE)
                                                                  else "4x4/SUV" if re.match("(.+)?suv(.+)?", x, re.IGNORECASE) or re.match("(.+)?pick-up(.+)?", x, re.IGNORECASE) or re.match("(.+)?crossover(.+)?", x, re.IGNORECASE)
                                                                  else "Cabriolet" if re.match("(.+)?cabriolet(.+)?", x, re.IGNORECASE) or re.match("(.+)roadster(.+)", x, re.IGNORECASE) or re.match("(.+)targa(.+)", x, re.IGNORECASE)
                                                                  or re.match("(.+)spyder(.+)", x, re.IGNORECASE)
@@ -702,13 +753,16 @@ class DataMachine(Thread):
         
     
     def plotTransmission(self, marque, model, gen, df, getPercentages=False):
-        df_sorted = df[(df["modele"].str.lower() == model.lower()) & (df["marque"].str.lower() == marque.lower()) & (df["generation"].str.upper() == gen.upper())]
+        df_sorted = df[(df["modele"].str.lower() == model.lower())
+                    & (df["marque"].str.lower() == marque.lower())
+                    & (df["generation"].str.upper() == gen.upper())
+                    & (df["transmition"] != "NC")]
         today = datetime.date.today()
         today_minus_ts = today - datetime.timedelta(days=365)
         df_sorted.date = pd.to_datetime(df_sorted.date)
         df_sorted = df_sorted[(df_sorted["date"] >= pd.Timestamp(today_minus_ts))]
         labels = ['Automatique', 'Manuelle']
-        df_sorted["transmition"] = df_sorted["transmition"].apply(lambda x: 0 if x == "Automatique" else 1)
+        df_sorted["transmition"] = df_sorted["transmition"].apply(lambda x: 0 if x == "AUTOMATIQUE" else 1)
         percentage = len(df_sorted[df_sorted["transmition"] == 0]) / len(df_sorted["transmition"])
         #percentage = 1 == only automatics
         if percentage != 1 and percentage != 0:
@@ -729,8 +783,9 @@ class DataMachine(Thread):
     def plotMotor(self, marque, model, gen, df, getPercentages=False):
         df_sorted = df[(df["modele"].str.lower() == model.lower())
                         & (df["marque"].str.lower() == marque.lower())
-                        & (df["energie"] != "-") & (df["energie"].notna())
-                        & (df["generation"].str.upper() == gen.upper())]
+                        & (df["energie"] != "-") & (df["energie"].notna()) & (df["energie"] != "NC")
+                        & (df["generation"].str.upper() == gen.upper())
+                        ]
         df_sorted.date = pd.to_datetime(df_sorted.date)
         today = datetime.date.today()
         today_minus_ts = today - datetime.timedelta(days=365)
@@ -830,20 +885,23 @@ class DataMachine(Thread):
                                     print("Not enough data for regression with this model")
                         
                         print("Plotting transmission for " + marque + " " + modele + " " + gen)
-                        self.plotTransmission(marque, modele, gen, df[(df["modele"].str.lower() == modele.lower()) & (df["marque"].str.lower() == marque.lower())])
-                        plt.close(plt.gcf())
+                        try:
+                            self.plotTransmission(marque, modele, gen, df[(df["modele"].str.lower() == modele.lower()) & (df["marque"].str.lower() == marque.lower())])
+                            plt.close(plt.gcf())
                         
                         
-                        print("Plotting motor for " + marque + " " + modele + " " + gen)
-                        self.plotMotor(marque, modele, gen, df[(df["modele"].str.lower() == modele.lower()) & (df["marque"].str.lower() == marque.lower())])
-                        plt.close(plt.gcf())
+                            print("Plotting motor for " + marque + " " + modele + " " + gen)
+                            self.plotMotor(marque, modele, gen, df[(df["modele"].str.lower() == modele.lower()) & (df["marque"].str.lower() == marque.lower())])
+                            plt.close(plt.gcf())
 
-                        print("Plotting volume for " + marque + " " + modele + " " + gen)
-                        self.plotDataVolume(marque, modele, gen, df[(df["modele"].str.lower() == modele.lower()) & (df["marque"].str.lower() == marque.lower())])
-                        plt.close(plt.gcf())
+                            print("Plotting volume for " + marque + " " + modele + " " + gen)
+                            self.plotDataVolume(marque, modele, gen, df[(df["modele"].str.lower() == modele.lower()) & (df["marque"].str.lower() == marque.lower())])
+                            plt.close(plt.gcf())
 
-                        print("Making pdf data for " + marque + " " + modele + " " + gen)
-                        self.makePdf(marque, modele, gen)
+                            print("Making pdf data for " + marque + " " + modele + " " + gen)
+                            self.makePdf(marque, modele, gen)
+                        except:
+                            print("Could not do plots for this model, not enough recent data")
                         
     
     def percentageVartiation(self, marque, model, generation, df=0, car="*", mot="*", days_variation=120):

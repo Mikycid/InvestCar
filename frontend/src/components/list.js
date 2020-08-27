@@ -69,7 +69,12 @@ export class List extends Component {
             toogle_info: !this.state.toogle_info,
         });
     }
-    
+    itemNoCarr(item){
+        let result = item.split(" ");
+        result.pop();
+        result = result.join(" ");
+        return {item:result};
+    }
     render() {
         return (
             <div id="table-main-page">
@@ -91,7 +96,7 @@ export class List extends Component {
                     
                     {this.state.modeles.map((item, step) =>(
                         
-                            <li key={step}  onClick={()=>this.props.switchTab("genview", {item})}>
+                            <li key={step}  onClick={()=>this.props.switchTab("genview", this.itemNoCarr(item))}>
                                 
 
                                 <TableCard item={item} motors={this.state.motors[step]} step={step}/>

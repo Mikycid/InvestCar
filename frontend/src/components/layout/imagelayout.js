@@ -27,8 +27,11 @@ export class ImageLayout extends Component {
                     ))}
                 </ul>
                 <div id="main-page-description">
-                    <h3>{this.props.best_models[this.props.index]}</h3>
-                    <p>Ce modèle a une {this.props.best_percentages[this.props.index] > 1 ? "augmentation" : "diminution" } de prix de {(this.props.best_percentages[this.props.index] * 100 - 100).toFixed(2)} % par rapport aux données entre 90 et 120 jours avant aujourd'hui.</p>
+                    <h3>{String(this.props.best_models[this.props.index]).replace("slashcharacter001", "/")}</h3>
+                    {this.props.best_percentages[this.props.index] != -1 ?
+                        <p>Ce modèle a une {this.props.best_percentages[this.props.index] > 1 ? "augmentation" : "diminution" } de prix de {(this.props.best_percentages[this.props.index] * 100 - 100).toFixed(2)} % par rapport aux données entre 90 et 120 jours avant aujourd'hui.</p>
+                        : <p>Aucune variation pour ce modèle</p>
+                    }
                     <p>Ces données sont calculées à titre indicatif, référez vous à la page de ce modèle pour plus d'informations</p>
                 </div>
             </div>
