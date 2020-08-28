@@ -1,4 +1,4 @@
-import pandas as pd
+import modin.pandas as pd
 import statistics as st
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
@@ -919,7 +919,7 @@ class DataMachine(Thread):
         df.date = pd.to_datetime(df.date, dayfirst=True)
 
 
-        today = datetime.date.today()
+        today = max(df.date)
         today_minus_one_month = today - datetime.timedelta(days=30)
         today_minus_three_months = today - datetime.timedelta(days=days_variation)
         today_minus_four_months = today - datetime.timedelta(days=days_variation+30)
