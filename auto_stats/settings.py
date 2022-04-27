@@ -136,6 +136,6 @@ STATICFILES_DIR = (
 
 EMAIL_HOST = 'smtp.ionos.fr'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'sales@investcar.fr'
-EMAIL_HOST_PASSWORD = 'Investcar2020!'
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = True

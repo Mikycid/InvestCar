@@ -1,4 +1,4 @@
-import modin.pandas as pd
+import pandas as pd
 import statistics as st
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
